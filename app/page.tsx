@@ -6,7 +6,14 @@ export default function Home() {
   return (
     <main className="dots-container">
       {dots.map((i) =>
-        i === 38 ? (
+        i === 2 ? (
+          <Link
+            key={i}
+            href="/make"
+            className="dot"
+            style={{ display: "block", cursor: "pointer" }}
+          />
+        ) : i === 38 ? (
           <Link
             key={i}
             href="/theme"
@@ -17,6 +24,7 @@ export default function Home() {
           <div key={i} className="dot" />
         ),
       )}
+
       <div className="dot half" title="60% blinking dot" />
     </main>
   );

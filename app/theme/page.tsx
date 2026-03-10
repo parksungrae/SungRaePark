@@ -22,7 +22,7 @@ export default function ThemePage() {
             fontSize: "14px",
           }}
         >
-          ← Back
+          ←
         </Link>
       </div>
     </div>
