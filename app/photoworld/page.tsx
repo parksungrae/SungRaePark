@@ -650,7 +650,7 @@ export default function PhotoworldPage() {
               {selectedId === -1
                 ? "Fuck You Too"
                 : selectedId === -2
-                  ? "True Love Wait"
+                  ? "RadioHello"
                   : `Photo #${selectedId + 1}`}
             </div>
             <button
@@ -735,7 +735,7 @@ export default function PhotoworldPage() {
         .camera-overlay {
           position: absolute;
           bottom: 20px;
-          right: 20px;
+          left: 20px;
           width: 240px;
           height: 180px;
           background: #000;
@@ -760,12 +760,12 @@ export default function PhotoworldPage() {
         .gesture-hint {
           position: absolute;
           bottom: -30px;
-          right: 0;
+          left: 0;
           color: white;
           font-size: 10px;
           opacity: 0.4;
           width: 220px;
-          text-align: right;
+          text-align: left;
           font-family: var(--font-inter, sans-serif);
           letter-spacing: 0.05em;
         }
