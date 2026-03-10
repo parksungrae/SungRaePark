@@ -253,6 +253,30 @@ body {
   backdrop-filter: blur(10px);
 }
 
+.sim-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 85;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.sim-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (min-width: 769px) {
+  .sim-backdrop {
+    display: none;
+  }
+}
+
 /* Desktop: Side Drawer */
 @media (min-width: 769px) {
   .sim-panel {

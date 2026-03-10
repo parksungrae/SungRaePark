@@ -195,6 +195,12 @@ export default function AquariumPage() {
         {isOpen ? "CLOSE" : "SPECIMENS"}
       </button>
 
+      {/* Backdrop for closing on outside click (Mobile) */}
+      <div
+        className={`sim-backdrop ${isOpen ? "show" : ""}`}
+        onClick={() => setIsOpen(false)}
+      />
+
       {/* Simulation Panel (Side Drawer / Bottom Sheet) */}
       <aside className={`sim-panel ${isOpen ? "open" : ""}`}>
         <div className="sim-panel-content">
