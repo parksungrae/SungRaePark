@@ -7,29 +7,41 @@ import * as THREE from "three";
 import Link from "next/link";
 import Script from "next/script";
 
-// MediaPipe Window Types
+interface NormalizedLandmark {
+  x: number;
+  y: number;
+  z: number;
+}
+
+interface Handedness {
+  index: number;
+  score: number;
+  label: "Left" | "Right";
+}
+
+interface HandsResults {
+  image?: CanvasImageSource;
+  multiHandLandmarks: NormalizedLandmark[][];
+  multiHandedness: Handedness[];
+}
+
 declare global {
   interface Window {
     Hands?: new (config: { locateFile: (file: string) => string }) => {
       setOptions: (options: Record<string, unknown>) => void;
-      onResults: (
-        callback: (results: {
-          image?: CanvasImageSource;
-          multiHandLandmarks: { x: number; y: number; z: number }[][];
-        }) => void,
-      ) => void;
+      onResults: (callback: (results: HandsResults) => void) => void;
       send: (inputs: { image: HTMLVideoElement }) => Promise<void>;
       close: () => Promise<void>;
     };
     drawConnectors?: (
       ctx: CanvasRenderingContext2D,
-      landmarks: unknown,
-      connections: unknown,
+      landmarks: NormalizedLandmark[],
+      connections: [number, number][],
       style: Record<string, unknown>,
     ) => void;
     drawLandmarks?: (
       ctx: CanvasRenderingContext2D,
-      landmarks: unknown,
+      landmarks: NormalizedLandmark[],
       style: Record<string, unknown>,
     ) => void;
   }
@@ -304,7 +316,7 @@ export default function PhotoworldPage() {
 
     // MediaPipe Hand Detection Loop
 
-    hands.onResults((results) => {
+    hands.onResults((results: HandsResults) => {
       if (!active || !canvasRef.current) return;
 
       setDebugInfo((prev) => ({ ...prev, frames: prev.frames + 1 }));
@@ -322,15 +334,19 @@ export default function PhotoworldPage() {
       }
       canvasCtx.restore();
 
-      let zoomHand: any = null;
-      let rotateHand: any = null;
+      let zoomHand: NormalizedLandmark[] | null = null;
+      let rotateHand: NormalizedLandmark[] | null = null;
 
       if (results.multiHandLandmarks && results.multiHandedness) {
-        results.multiHandLandmarks.forEach((landmarks, idx) => {
-          const label = results.multiHandedness[idx].label;
+        for (let idx = 0; idx < results.multiHandLandmarks.length; idx++) {
+          const landmarks = results.multiHandLandmarks[idx];
+          const handedness = results.multiHandedness[idx];
+          if (!handedness) continue;
+
+          const label = handedness.label;
           // SWAP: Left = Zoom/Details, Right = Rotate/Freeze
           if (label === "Left") zoomHand = landmarks;
-          else rotateHand = landmarks;
+          else if (label === "Right") rotateHand = landmarks;
 
           canvasCtx.save();
           window.drawConnectors!(canvasCtx, landmarks, HAND_CONNECTIONS_CONST, {
@@ -343,11 +359,11 @@ export default function PhotoworldPage() {
             radius: 3,
           });
           canvasCtx.restore();
-        });
+        }
       }
 
       // === ZOOM HAND (LEFT): ZOOM & DETAILS ===
-      if (zoomHand) {
+      if (zoomHand && zoomHand.length >= 21) {
         const thumbTip = zoomHand[4];
         const indexTip = zoomHand[8];
         const dist = Math.sqrt(
@@ -356,18 +372,29 @@ export default function PhotoworldPage() {
         );
         const isPinching = dist < 0.05;
 
-        const isIndex = zoomHand[8].y < zoomHand[6].y;
-        const isMiddle = zoomHand[12].y < zoomHand[10].y;
-        const isRing = zoomHand[16].y < zoomHand[14].y;
-        const isPinky = zoomHand[20].y < zoomHand[18].y;
+        const isIndex = zoomHand.length > 8 && zoomHand[8].y < zoomHand[6].y;
+        const isMiddle =
+          zoomHand.length > 12 && zoomHand[12].y < zoomHand[10].y;
+        const isRing = zoomHand.length > 16 && zoomHand[16].y < zoomHand[14].y;
+        const isPinky = zoomHand.length > 20 && zoomHand[20].y < zoomHand[18].y;
         const extendedCount = [isIndex, isMiddle, isRing, isPinky].filter(
           Boolean,
         ).length;
 
-        if (isMiddle && !isIndex && !isRing && !isPinky) {
+        const isFuckGesture = isMiddle && !isIndex && !isRing && !isPinky;
+        const isVSign = isIndex && isMiddle && !isRing && !isPinky;
+
+        if (isFuckGesture) {
           if (!tapCooldown && selectedIdRef.current === null) {
             setSelectedId(-1);
             selectedIdRef.current = -1;
+            tapCooldown = true;
+            setTimeout(() => (tapCooldown = false), 300);
+          }
+        } else if (isVSign) {
+          if (!tapCooldown && selectedIdRef.current === null) {
+            setSelectedId(-2);
+            selectedIdRef.current = -2;
             tapCooldown = true;
             setTimeout(() => (tapCooldown = false), 300);
           }
@@ -376,8 +403,15 @@ export default function PhotoworldPage() {
           if (Math.abs(dy) > 0.002 && Math.abs(dy) < 0.1) {
             setZoom((prev) => Math.max(20, Math.min(120, prev + dy * 45)));
           }
+        } else if (extendedCount <= 1 && !isFuckGesture && !isVSign) {
+          // Fist (Close): Only close if NOT pinching
+          if (!tapCooldown && selectedIdRef.current !== null) {
+            setSelectedId(null);
+            selectedIdRef.current = null;
+            tapCooldown = true;
+            setTimeout(() => (tapCooldown = false), 300);
+          }
         } else if (extendedCount === 4) {
-          // Open details of the photo closest to center
           if (!tapCooldown && selectedIdRef.current === null) {
             const quat = new THREE.Quaternion().setFromEuler(
               new THREE.Euler(
@@ -387,10 +421,8 @@ export default function PhotoworldPage() {
                 "XYZ",
               ),
             );
-
             let bestId = 0;
             let minCenterDistSq = Infinity;
-
             for (let i = 0; i < photos.length; i++) {
               const worldPos = photos[i].position.clone().applyQuaternion(quat);
               if (worldPos.z > 0) {
@@ -402,17 +434,8 @@ export default function PhotoworldPage() {
                 }
               }
             }
-
             setSelectedId(bestId);
             selectedIdRef.current = bestId;
-            tapCooldown = true;
-            setTimeout(() => (tapCooldown = false), 300);
-          }
-        } else if (extendedCount === 0) {
-          // Fist: Close details
-          if (!tapCooldown && selectedIdRef.current !== null) {
-            setSelectedId(null);
-            selectedIdRef.current = null;
             tapCooldown = true;
             setTimeout(() => (tapCooldown = false), 300);
           }
@@ -421,7 +444,7 @@ export default function PhotoworldPage() {
       }
 
       // === ROTATE HAND (RIGHT): ROTATE & FREEZE ===
-      if (rotateHand) {
+      if (rotateHand && rotateHand.length >= 21) {
         const thumbTip = rotateHand[4];
         const indexTip = rotateHand[8];
         const dist = Math.sqrt(
@@ -430,18 +453,32 @@ export default function PhotoworldPage() {
         );
         const isPinching = dist < 0.05;
 
-        const isIndex = rotateHand[8].y < rotateHand[6].y;
-        const isMiddle = rotateHand[12].y < rotateHand[10].y;
-        const isRing = rotateHand[16].y < rotateHand[14].y;
-        const isPinky = rotateHand[20].y < rotateHand[18].y;
+        const isIndex =
+          rotateHand.length > 8 && rotateHand[8].y < rotateHand[6].y;
+        const isMiddle =
+          rotateHand.length > 12 && rotateHand[12].y < rotateHand[10].y;
+        const isRing =
+          rotateHand.length > 16 && rotateHand[16].y < rotateHand[14].y;
+        const isPinky =
+          rotateHand.length > 20 && rotateHand[20].y < rotateHand[18].y;
         const extendedCount = [isIndex, isMiddle, isRing, isPinky].filter(
           Boolean,
         ).length;
 
-        if (isMiddle && !isIndex && !isRing && !isPinky) {
+        const isFuckGesture = isMiddle && !isIndex && !isRing && !isPinky;
+        const isVSign = isIndex && isMiddle && !isRing && !isPinky;
+
+        if (isFuckGesture) {
           if (!tapCooldown && selectedIdRef.current === null) {
             setSelectedId(-1);
             selectedIdRef.current = -1;
+            tapCooldown = true;
+            setTimeout(() => (tapCooldown = false), 300);
+          }
+        } else if (isVSign) {
+          if (!tapCooldown && selectedIdRef.current === null) {
+            setSelectedId(-2);
+            selectedIdRef.current = -2;
             tapCooldown = true;
             setTimeout(() => (tapCooldown = false), 300);
           }
@@ -461,7 +498,6 @@ export default function PhotoworldPage() {
             );
           }
         } else if (extendedCount === 4) {
-          // Right Palm: Freeze for 1 second
           if (!tapCooldown) {
             freezeUntilRef.current = Date.now() + 1000;
             tapCooldown = true;
@@ -604,12 +640,18 @@ export default function PhotoworldPage() {
               src={
                 selectedId === -1
                   ? "/fuck.png"
-                  : photos.find((p) => p.id === selectedId)?.url
+                  : selectedId === -2
+                    ? "/radiohead.jpg"
+                    : photos.find((p) => p.id === selectedId)?.url
               }
               alt="Selection"
             />
             <div className="modal-info">
-              {selectedId === -1 ? "Fuck You Too" : `Photo #${selectedId + 1}`}
+              {selectedId === -1
+                ? "Fuck You Too"
+                : selectedId === -2
+                  ? "True Love Wait"
+                  : `Photo #${selectedId + 1}`}
             </div>
             <button
               className="close-modal"
