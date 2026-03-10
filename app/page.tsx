@@ -13,6 +13,13 @@ export default function Home() {
             className="dot"
             style={{ display: "block", cursor: "pointer" }}
           />
+        ) : i === 3 ? (
+          <Link
+            key={i}
+            href="/aquarium"
+            className="dot"
+            style={{ display: "block", cursor: "pointer" }}
+          />
         ) : i === 38 ? (
           <Link
             key={i}
