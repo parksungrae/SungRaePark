@@ -30,7 +30,7 @@ body {
 .dots-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 20px; /* 원래의 촘촘한 간격으로 원복 */
   padding: 24px;
   width: 100%;
   max-width: 600px;
@@ -50,6 +50,34 @@ body {
   background-color: var(--foreground);
   clip-path: inset(0 40% 0 0); /* 60% from the left */
   animation: blink 1.2s infinite ease-in-out;
+}
+
+.dot-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dot-title {
+  position: absolute;
+  top: calc(100% + 10px); /* 20px 간격의 절반 지점 */
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  font-size: 9px; /* 촘촘한 간격을 위해 폰트 크기 미세 축소 */
+  white-space: nowrap;
+  opacity: 0;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  pointer-events: none;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.dot-title.visible {
+  opacity: 0.8;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .theme-container {
@@ -103,6 +131,10 @@ body {
     width: 16px;
     height: 16px;
     clip-path: inset(0 40% 0 0);
+  }
+  .dot-title {
+    font-size: 8px; /* 모바일에서 텍스트 크기 축소 */
+    top: calc(100% + 7px); /* 모바일 간격 14px의 절반 */
   }
 }
 

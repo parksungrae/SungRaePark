@@ -108,7 +108,11 @@ const Fish = ({
   );
 };
 
-const SimulationBox = () => {
+const SimulationBox = ({
+  themeColors,
+}: {
+  themeColors: { bg: string; fg: string };
+}) => {
   return null;
 };
 
