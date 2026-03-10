@@ -86,7 +86,7 @@ function Photo({
     <group position={data.position}>
       <ThreeImage
         url={data.url}
-        scale={isSelected ? [4.5, 4.5] : [1.2, 1.2]}
+        scale={isSelected ? [5.0, 5.0] : [1.8, 1.8]}
         onClick={(e: { stopPropagation: () => void }) => {
           e.stopPropagation();
           onClick();
@@ -328,13 +328,13 @@ export default function PhotoworldPage() {
       if (results.multiHandLandmarks && results.multiHandedness) {
         results.multiHandLandmarks.forEach((landmarks, idx) => {
           const label = results.multiHandedness[idx].label;
-          // SWAP: Left = Zoom, Right = Rotate
+          // SWAP: Left = Zoom/Details, Right = Rotate/Freeze
           if (label === "Left") zoomHand = landmarks;
           else rotateHand = landmarks;
 
           canvasCtx.save();
           window.drawConnectors!(canvasCtx, landmarks, HAND_CONNECTIONS_CONST, {
-            color: label === "Left" ? "#ff0066" : "#00ff66", // Left(Zoom) = Pink, Right(Rotate) = Green
+            color: label === "Left" ? "#ff0066" : "#00ff66", // Left(Zoom/Detail) = Pink, Right(Rotate/Freeze) = Green
             lineWidth: 4,
           });
           window.drawLandmarks!(canvasCtx, landmarks, {
@@ -356,7 +356,6 @@ export default function PhotoworldPage() {
         );
         const isPinching = dist < 0.05;
 
-        // Count extended fingers for zoomHand
         const isIndex = zoomHand[8].y < zoomHand[6].y;
         const isMiddle = zoomHand[12].y < zoomHand[10].y;
         const isRing = zoomHand[16].y < zoomHand[14].y;
@@ -365,7 +364,14 @@ export default function PhotoworldPage() {
           Boolean,
         ).length;
 
-        if (isPinching) {
+        if (isMiddle && !isIndex && !isRing && !isPinky) {
+          if (!tapCooldown && selectedIdRef.current === null) {
+            setSelectedId(-1);
+            selectedIdRef.current = -1;
+            tapCooldown = true;
+            setTimeout(() => (tapCooldown = false), 300);
+          }
+        } else if (isPinching) {
           const dy = indexTip.y - lastY_L;
           if (Math.abs(dy) > 0.002 && Math.abs(dy) < 0.1) {
             setZoom((prev) => Math.max(20, Math.min(120, prev + dy * 45)));
@@ -373,42 +379,42 @@ export default function PhotoworldPage() {
         } else if (extendedCount === 4) {
           // Open details of the photo closest to center
           if (!tapCooldown && selectedIdRef.current === null) {
-            // Find photo facing the camera (closest to Z-forward in local space)
-            // Camera is at (0,0,zoom) looking at (0,0,0). View vector is (0,0,-1).
-            // Group rotates by euler(x, y, 0).
             const quat = new THREE.Quaternion().setFromEuler(
               new THREE.Euler(
                 globeRotationRef.current.x,
                 globeRotationRef.current.y,
                 0,
-                "YXZ",
+                "XYZ",
               ),
             );
-            const targetVec = new THREE.Vector3(0, 0, 1).applyQuaternion(
-              quat.invert(),
-            );
+
             let bestId = 0;
-            let maxDot = -1;
+            let minCenterDistSq = Infinity;
+
             for (let i = 0; i < photos.length; i++) {
-              const dot = photos[i].normalizedPos.dot(targetVec);
-              if (dot > maxDot) {
-                maxDot = dot;
-                bestId = photos[i].id;
+              const worldPos = photos[i].position.clone().applyQuaternion(quat);
+              if (worldPos.z > 0) {
+                const centerDistSq =
+                  worldPos.x * worldPos.x + worldPos.y * worldPos.y;
+                if (centerDistSq < minCenterDistSq) {
+                  minCenterDistSq = centerDistSq;
+                  bestId = photos[i].id;
+                }
               }
             }
 
             setSelectedId(bestId);
             selectedIdRef.current = bestId;
             tapCooldown = true;
-            setTimeout(() => (tapCooldown = false), 1000);
+            setTimeout(() => (tapCooldown = false), 300);
           }
         } else if (extendedCount === 0) {
-          // Right Fist: Close details
+          // Fist: Close details
           if (!tapCooldown && selectedIdRef.current !== null) {
             setSelectedId(null);
             selectedIdRef.current = null;
             tapCooldown = true;
-            setTimeout(() => (tapCooldown = false), 1000);
+            setTimeout(() => (tapCooldown = false), 300);
           }
         }
         lastY_L = indexTip.y;
@@ -424,7 +430,6 @@ export default function PhotoworldPage() {
         );
         const isPinching = dist < 0.05;
 
-        // Count extended fingers for fist/palm on rotateHand
         const isIndex = rotateHand[8].y < rotateHand[6].y;
         const isMiddle = rotateHand[12].y < rotateHand[10].y;
         const isRing = rotateHand[16].y < rotateHand[14].y;
@@ -433,12 +438,18 @@ export default function PhotoworldPage() {
           Boolean,
         ).length;
 
-        if (isPinching) {
+        if (isMiddle && !isIndex && !isRing && !isPinky) {
+          if (!tapCooldown && selectedIdRef.current === null) {
+            setSelectedId(-1);
+            selectedIdRef.current = -1;
+            tapCooldown = true;
+            setTimeout(() => (tapCooldown = false), 300);
+          }
+        } else if (isPinching) {
           const dx = indexTip.x - lastX_R;
           const dy = indexTip.y - lastY_R;
           if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
             const speed = 4;
-            // Horizontal/Vertical dragging
             globeRotationRef.current.y += dx * speed;
             globeRotationRef.current.x += dy * speed;
             setGlobeRotation(
@@ -450,11 +461,11 @@ export default function PhotoworldPage() {
             );
           }
         } else if (extendedCount === 4) {
-          // Left Palm: Freeze for 1 second
+          // Right Palm: Freeze for 1 second
           if (!tapCooldown) {
             freezeUntilRef.current = Date.now() + 1000;
             tapCooldown = true;
-            setTimeout(() => (tapCooldown = false), 1000);
+            setTimeout(() => (tapCooldown = false), 300);
             setDebugInfo((prev) => ({ ...prev, gesture: "Frozen!" }));
           }
         }
@@ -590,10 +601,16 @@ export default function PhotoworldPage() {
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <img
-              src={photos.find((p) => p.id === selectedId)?.url}
+              src={
+                selectedId === -1
+                  ? "/fuck.png"
+                  : photos.find((p) => p.id === selectedId)?.url
+              }
               alt="Selection"
             />
-            <div className="modal-info">Photo #{selectedId + 1}</div>
+            <div className="modal-info">
+              {selectedId === -1 ? "Fuck You Too" : `Photo #${selectedId + 1}`}
+            </div>
             <button
               className="close-modal"
               onClick={() => {
@@ -659,23 +676,18 @@ export default function PhotoworldPage() {
           position: absolute;
           top: 30px;
           left: 30px;
-          z-index: 100;
+          z-index: 1000;
           color: white;
           text-decoration: none;
-          font-size: 20px;
-          opacity: 0.3;
+          font-size: 24px;
+          opacity: 0.4;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          width: 40px;
-          height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 50%;
-          border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .back-button:hover {
           opacity: 1;
-          background: rgba(255, 255, 255, 0.1);
           transform: scale(1.1);
         }
         .camera-overlay {
