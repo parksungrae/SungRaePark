@@ -10,6 +10,7 @@ export default function Home() {
   const dotData: Record<number, { href: string; title: string }> = {
     2: { href: "/make", title: "創" },
     3: { href: "/aquarium", title: "魚" },
+    5: { href: "/clothes", title: "衣" },
     38: { href: "/theme", title: "明" },
   };
 
