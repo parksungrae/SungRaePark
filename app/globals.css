@@ -30,23 +30,23 @@ body {
 .dots-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
   padding: 24px;
   width: 100%;
   max-width: 600px;
 }
 
 .dot {
-  width: 12px;
-  height: 12px;
+  width: 24px;
+  height: 24px;
   background-color: var(--foreground);
   border-radius: 50%;
   transition: background-color var(--transition-speed);
 }
 
 .dot.half {
-  width: 12px;
-  height: 12px;
+  width: 24px;
+  height: 24px;
   background-color: var(--foreground);
   clip-path: inset(0 40% 0 0); /* 60% from the left */
   animation: blink 1.2s infinite ease-in-out;
@@ -92,16 +92,16 @@ body {
 
 @media (max-width: 768px) {
   .dots-container {
-    gap: 12px;
+    gap: 14px;
     padding: 16px;
   }
   .dot {
-    width: 8px;
-    height: 8px;
+    width: 16px;
+    height: 16px;
   }
   .dot.half {
-    width: 8px;
-    height: 8px;
+    width: 16px;
+    height: 16px;
     clip-path: inset(0 40% 0 0);
   }
 }
@@ -183,4 +183,114 @@ body {
   .detail-title {
     font-size: 1.8rem;
   }
+}
+
+/* Aquarium Simulation Panel */
+.sim-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: 1px solid var(--foreground);
+  color: var(--foreground);
+  padding: 8px 16px;
+  cursor: pointer;
+  z-index: 100;
+  font-family: inherit;
+  font-size: 14px;
+  opacity: 0.6;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s;
+}
+
+.sim-toggle:hover {
+  opacity: 1;
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.sim-panel {
+  position: fixed;
+  z-index: 90;
+  background: var(--background);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+/* Desktop: Side Drawer */
+@media (min-width: 769px) {
+  .sim-panel {
+    top: 80px;
+    right: 20px;
+    bottom: 80px;
+    width: 320px;
+    border-radius: 8px;
+    transform: translateX(calc(100% + 40px));
+  }
+  .sim-panel.open {
+    transform: translateX(0);
+  }
+}
+
+/* Mobile: Bottom Sheet */
+@media (max-width: 768px) {
+  .sim-panel {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60vh;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+  }
+  .sim-panel.open {
+    transform: translateY(0);
+  }
+}
+
+.sim-panel-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sim-search {
+  background: none;
+  border: none;
+  border-bottom: 2px solid var(--foreground);
+  color: var(--foreground);
+  padding: 8px 0;
+  font-family: inherit;
+  font-size: 16px;
+  margin-bottom: 24px;
+  outline: none;
+  opacity: 0.8;
+}
+
+.specimen-list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.specimen-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.specimen-id {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.specimen-name {
+  font-size: 14px;
+  font-weight: 500;
 }
