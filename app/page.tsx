@@ -12,6 +12,7 @@ export default function Home() {
     3: { href: "/aquarium", title: "魚" },
     10: { href: "/photoworld", title: "寫" },
     5: { href: "/clothes", title: "衣" },
+    18: { href: "/music", title: "歌" },
     38: { href: "/theme", title: "明" },
   };
 
