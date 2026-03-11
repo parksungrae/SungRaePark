@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo, useState } from "react";
+import React, { useRef, useMemo, useState, memo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 type OrbitControlsImpl = React.ComponentRef<typeof OrbitControls>;
@@ -17,16 +17,25 @@ const SPECIMENS = Array.from({ length: FISH_COUNT }).map((_, i) => ({
   type: i % 3 === 0 ? "Predator" : i % 3 === 1 ? "Neutral" : "Prey",
 }));
 
-const Fish = ({
+interface FoodItem {
+  id: number;
+  position: THREE.Vector3;
+}
+
+const Fish = memo(({
   themeColors,
   visible,
   isFollowing,
   controlsRef,
+  foods,
+  onEat,
 }: {
   themeColors: { fg: string };
   visible: boolean;
   isFollowing: boolean;
   controlsRef: React.RefObject<OrbitControlsImpl | null>;
+  foods: FoodItem[];
+  onEat: (id: number) => void;
 }) => {
   const meshRef = useRef<THREE.Group>(null);
 
@@ -44,23 +53,48 @@ const Fish = ({
   useFrame(() => {
     if (!meshRef.current) return;
     meshRef.current.visible = visible;
-    if (!visible) return; // Stop physical simulation if hidden? Or keep it running in background?
-    // Let's keep it running so they aren't in the same spot when they reappear
+    if (!visible) return;
 
     const position = meshRef.current.position;
 
-    if (position.length() > BOUNDS - 1) {
-      const steerToCenter = position
-        .clone()
-        .negate()
-        .normalize()
-        .multiplyScalar(0.001);
-      data.velocity.add(steerToCenter);
+    // Food attraction
+    let isAttracted = false;
+    if (foods.length > 0) {
+      let closestFood: FoodItem | null = null;
+      let minDistance = 6;
+      
+      for (const f of foods) {
+        const d = position.distanceTo(f.position);
+        if (d < minDistance) {
+          minDistance = d;
+          closestFood = f;
+        }
+      }
+
+      if (closestFood) {
+        const steer = closestFood.position.clone().sub(position).normalize().multiplyScalar(0.012);
+        data.velocity.add(steer);
+        isAttracted = true;
+
+        if (minDistance < 0.4) {
+          onEat(closestFood.id);
+        }
+      }
     }
 
-    data.velocity.add(
-      new THREE.Vector3().random().subScalar(0.5).multiplyScalar(0.0005),
-    );
+    if (!isAttracted) {
+      if (position.length() > BOUNDS - 1) {
+        const steerToCenter = position
+          .clone()
+          .negate()
+          .normalize()
+          .multiplyScalar(0.001);
+        data.velocity.add(steerToCenter);
+      }
+      data.velocity.add(
+        new THREE.Vector3().random().subScalar(0.5).multiplyScalar(0.0005),
+      );
+    }
 
     if (data.velocity.length() > 0.05) data.velocity.setLength(0.05);
 
@@ -106,15 +140,8 @@ const Fish = ({
       </mesh>
     </group>
   );
-};
-
-const SimulationBox = ({
-  themeColors,
-}: {
-  themeColors: { bg: string; fg: string };
-}) => {
-  return null;
-};
+});
+Fish.displayName = "Fish";
 
 const CameraTargetReset = ({
   followingId,
@@ -143,6 +170,11 @@ export default function AquariumPage() {
   const [followingId, setFollowingId] = useState<string | null>(null);
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
+  // Interaction States
+  const [mode, setMode] = useState<"view" | "feed">("view");
+  const [foods, setFoods] = useState<FoodItem[]>([]);
+  const mouseRef = useRef(new THREE.Vector3());
+
   const themeColors =
     theme === "dark"
       ? { bg: "#000000", fg: "#ffffff" }
@@ -157,6 +189,27 @@ export default function AquariumPage() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();
+  };
+
+  const handleCanvasClick = () => {
+    if (mode === "feed") {
+      const food: FoodItem = {
+        id: Date.now(),
+        position: mouseRef.current.clone(),
+      };
+      setFoods((prev) => [...prev, food]);
+      
+      setTimeout(() => {
+        setFoods((prev) => prev.filter(f => f.id !== food.id));
+      }, 8000);
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    const x = (e.clientX / window.innerWidth) * 2 - 1;
+    const y = -(e.clientY / window.innerHeight) * 2 + 1;
+    const pos = new THREE.Vector3(x * 12, y * 8, 0);
+    mouseRef.current.copy(pos);
   };
 
   const filteredSpecimens = SPECIMENS.filter(
@@ -175,33 +228,64 @@ export default function AquariumPage() {
         overflow: "hidden",
       }}
     >
-      {/* HUD Layer */}
       <div
-        style={{ position: "fixed", top: "20px", left: "20px", zIndex: 100 }}
+        style={{ position: "fixed", top: "20px", left: "20px", zIndex: 100, display: "flex", gap: "10px", alignItems: "center" }}
       >
         <Link
           href="/"
           style={{
             color: themeColors.fg,
             textDecoration: "none",
-            fontSize: "20px",
+            fontSize: "24px",
+            marginRight: "10px"
           }}
         >
           ←
         </Link>
+        <div style={{ 
+          display: "flex", 
+          background: "rgba(255, 255, 255, 0.05)", 
+          backdropFilter: "blur(12px)",
+          borderRadius: "24px", 
+          padding: "4px",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)"
+        }}>
+            {["view", "feed"].map((m) => (
+                <button
+                    key={m}
+                    onClick={() => {
+                        setMode(m as "view" | "feed");
+                    }}
+                    style={{
+                        padding: "8px 20px",
+                        borderRadius: "20px",
+                        border: "none",
+                        background: mode === m ? "white" : "transparent",
+                        color: mode === m ? "black" : themeColors.fg,
+                        cursor: "pointer",
+                        fontSize: "11px",
+                        textTransform: "uppercase",
+                        fontWeight: "800",
+                        letterSpacing: "0.05em",
+                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                    }}
+                >
+                    {m}
+                </button>
+            ))}
+        </div>
       </div>
 
       <button className="sim-toggle" onClick={() => setIsOpen(!isOpen)}>
         {isOpen ? "CLOSE" : "SPECIMENS"}
       </button>
 
-      {/* Backdrop for closing on outside click (Mobile) */}
       <div
         className={`sim-backdrop ${isOpen ? "show" : ""}`}
         onClick={() => setIsOpen(false)}
       />
 
-      {/* Simulation Panel (Side Drawer / Bottom Sheet) */}
       <aside className={`sim-panel ${isOpen ? "open" : ""}`}>
         <div className="sim-panel-content">
           <div
@@ -275,30 +359,30 @@ export default function AquariumPage() {
                 </button>
               </li>
             ))}
-            {filteredSpecimens.length === 0 && (
-              <li
-                style={{
-                  opacity: 0.5,
-                  fontSize: "14px",
-                  textAlign: "center",
-                  marginTop: "20px",
-                }}
-              >
-                No entities found
-              </li>
-            )}
           </ul>
         </div>
       </aside>
 
-      <Canvas camera={{ position: [0, 5, 20], fov: 45 }}>
+      <Canvas 
+        camera={{ position: [0, 5, 20], fov: 45 }}
+        onClick={handleCanvasClick}
+        onPointerMove={handlePointerMove}
+      >
         <color attach="background" args={[themeColors.bg]} />
         <ambientLight intensity={1.5} />
-        <SimulationBox themeColors={themeColors} />
         <CameraTargetReset
           followingId={followingId}
           controlsRef={controlsRef}
         />
+
+        {/* Food Particles */}
+        {foods.map((f) => (
+          <mesh key={f.id} position={f.position}>
+             <boxGeometry args={[0.08, 0.08, 0.08]} />
+             <meshStandardMaterial color="#d97706" roughness={1} />
+          </mesh>
+        ))}
+
         {SPECIMENS.map((s) => {
           const isVisible =
             !appliedSearch ||
@@ -312,6 +396,8 @@ export default function AquariumPage() {
               visible={isVisible}
               isFollowing={followingId === s.id}
               controlsRef={controlsRef}
+              foods={foods}
+              onEat={(foodId) => setFoods(prev => prev.filter(f => f.id !== foodId))}
             />
           );
         })}
@@ -321,6 +407,7 @@ export default function AquariumPage() {
           enablePan={false}
           maxDistance={40}
           minDistance={10}
+          enabled={mode === "view"}
         />
       </Canvas>
     </div>
