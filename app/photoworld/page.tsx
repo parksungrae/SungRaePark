@@ -627,6 +627,14 @@ export default function PhotoworldPage() {
         <canvas ref={canvasRef} className="gesture-canvas" />
       </div>
 
+      {(debugInfo.cameraStatus === "Denied/Error" || debugInfo.cameraStatus === "Play Error") && (
+        <div className="camera-error-screen">
+          <div className="error-content">
+            <span className="error-title">Error</span>
+          </div>
+        </div>
+      )}
+
       {selectedId !== null && (
         <div
           className="modal-overlay"
@@ -716,9 +724,10 @@ export default function PhotoworldPage() {
         }
         .back-button {
           position: absolute;
-          top: 30px;
-          left: 30px;
-          z-index: 1000;
+          top: 15px; /* 시각적 위치 보정을 위해 기존 30px에서 조정 */
+          left: 15px;
+          padding: 15px; /* 클릭 영역 대폭 확대 */
+          z-index: 10001;
           color: white;
           text-decoration: none;
           font-size: 24px;
@@ -827,6 +836,31 @@ export default function PhotoworldPage() {
           to {
             opacity: 1;
           }
+        }
+        .camera-error-screen {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.95);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 10000;
+        }
+        .error-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 20px;
+        }
+        .error-title {
+          color: #ff3333;
+          font-size: 5rem;
+          font-weight: bold;
+          font-family: sans-serif;
+          letter-spacing: 0.1em;
         }
         @keyframes zoomIn {
           from {

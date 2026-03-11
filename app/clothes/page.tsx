@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, Suspense } from "react";
+import React, { useRef, Suspense, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -15,7 +15,84 @@ import * as THREE from "three";
 import Link from "next/link";
 
 // ----------------------------------------------------------------------------
-// Swayer Clothing Item
+// Flowing Part Component
+// ----------------------------------------------------------------------------
+function FlowingPart({
+  width,
+  height,
+  depth = 0.04,
+  color,
+  delay,
+  offsetY = 0,
+}: {
+  width: number;
+  height: number;
+  depth?: number;
+  color: string;
+  delay: number;
+  offsetY?: number;
+}) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const lastCamPos = useRef(new THREE.Vector3());
+  const intensity = useRef(0);
+
+  const geometry = useMemo(() => {
+    const geo = new THREE.BoxGeometry(width, height, depth, 4, 8, 1);
+    geo.translate(0, -height / 2, 0);
+    return geo;
+  }, [width, height, depth]);
+
+  const initialPositions = useMemo(() => {
+    return new Float32Array(geometry.attributes.position.array);
+  }, [geometry]);
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    const t = state.clock.elapsedTime;
+    
+    // 카메라 이동 속도에 따라 찰랑임 세기 조절
+    const camDist = state.camera.position.distanceTo(lastCamPos.current);
+    intensity.current = THREE.MathUtils.lerp(intensity.current, camDist * 10, 0.05);
+    lastCamPos.current.copy(state.camera.position);
+
+    const positions = meshRef.current.geometry.attributes.position;
+    // 더욱 미세한 찰랑임 (0.4 -> 0.08)
+    const sway = 0.001 + intensity.current * 0.08;
+
+    for (let i = 0; i < positions.count; i++) {
+      const x = initialPositions[i * 3];
+      const y = initialPositions[i * 3 + 1];
+      const z = initialPositions[i * 3 + 2];
+
+      const absoluteY = y + offsetY;
+      const ny = Math.abs(absoluteY) / 1.5; 
+      // 지수를 높여 하단만 살짝 흔들리게 (1.5 -> 2.5)
+      const power = Math.pow(ny, 2.5);
+
+      // 속도와 강도를 최소화
+      const waveZ =
+        Math.sin(t * 1.2 + absoluteY * 2 + delay) * (power * sway) +
+        Math.cos(t * 1.0 + x * 3 + delay) * (power * 0.005);
+      
+      const waveX = Math.sin(t * 0.8 + absoluteY * 1.2 + delay) * (power * sway * 0.15);
+
+      positions.setZ(i, z + waveZ);
+      positions.setX(i, x + waveX);
+    }
+
+    positions.needsUpdate = true;
+    meshRef.current.geometry.computeVertexNormals();
+  });
+
+  return (
+    <mesh ref={meshRef} geometry={geometry} position={[0, offsetY, 0]} castShadow>
+      <meshStandardMaterial color={color} roughness={0.8} />
+    </mesh>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// Detailed Clothing Item
 // ----------------------------------------------------------------------------
 function Cloth({
   position,
@@ -23,23 +100,33 @@ function Cloth({
   delay,
   rotation = [0, 0, 0],
   type = "shirt",
+  sizeVariation = 1,
 }: {
   position: [number, number, number];
   color: string;
   delay: number;
   rotation?: [number, number, number];
   type?: "shirt" | "coat" | "pants";
+  sizeVariation?: number;
 }) {
   const group = useRef<THREE.Group>(null);
   const rotationZ = useRef(0);
   const velocity = useRef(0);
+  const lastCamPos = useRef(new THREE.Vector3());
+  const camVelocity = useRef(0);
 
   useFrame((state) => {
     if (!group.current) return;
     const t = state.clock.elapsedTime;
-    const target = state.pointer.x * 0.3 + Math.sin(t * 1.5 + delay) * 0.02;
-    const stiffness = 0.06;
-    const damping = 0.92;
+
+    const camDist = state.camera.position.distanceTo(lastCamPos.current);
+    camVelocity.current = THREE.MathUtils.lerp(camVelocity.current, camDist, 0.1);
+    lastCamPos.current.copy(state.camera.position);
+
+    // 카메라 움직임이 있을 때 전체 그룹이 눈에 거의 안 띄게 흔들림 (0.5 -> 0.05)
+    const target = Math.sin(t * 1.0 + delay) * (0.0005 + camVelocity.current * 0.05);
+    const stiffness = 0.02;
+    const damping = 0.95;
 
     velocity.current += (target - rotationZ.current) * stiffness;
     velocity.current *= damping;
@@ -49,216 +136,145 @@ function Cloth({
   });
 
   const isCoat = type === "coat";
-  const length = isCoat ? 1.4 : type === "pants" ? 1.0 : 0.85;
-  const width = type === "pants" ? 0.35 : 0.45;
+  const isPants = type === "pants";
+  
+  const bodyLength = (isCoat ? 1.4 : isPants ? 0.3 : 0.85) * sizeVariation;
+  const bodyWidth = (isPants ? 0.42 : 0.48) * sizeVariation;
 
   return (
     <group position={position} ref={group} rotation={rotation}>
-      {/* Hanger Hook */}
-      <mesh position={[0, 0.025, 0]}>
-        <torusGeometry args={[0.025, 0.004, 8, 16, Math.PI]} />
-        <meshStandardMaterial color="#a3a3a3" metalness={0.8} roughness={0.3} />
-      </mesh>
-      {/* Hanger Neck */}
-      <Cylinder args={[0.004, 0.004, 0.075]} position={[0, -0.0125, 0]}>
-        <meshStandardMaterial color="#a3a3a3" metalness={0.8} />
-      </Cylinder>
-      {/* Hanger Body */}
-      <Cylinder
-        args={[0.004, 0.004, width - 0.05]}
-        position={[0, -0.05, 0]}
-        rotation={[0, 0, Math.PI / 2]}
-      >
-        <meshStandardMaterial color="#a3a3a3" metalness={0.8} />
-      </Cylinder>
+      {/* Hanger Group */}
+      <group>
+        <mesh position={[0, 0.025, 0]}>
+          <torusGeometry args={[0.025, 0.004, 8, 16, Math.PI]} />
+          <meshStandardMaterial color="#888" metalness={0.8} roughness={0.3} />
+        </mesh>
+        <Cylinder args={[0.004, 0.004, 0.075]} position={[0, -0.0125, 0]}>
+          <meshStandardMaterial color="#888" metalness={0.8} />
+        </Cylinder>
+        <Cylinder
+          args={[0.004, 0.004, bodyWidth]}
+          position={[0, -0.05, 0]}
+          rotation={[0, 0, Math.PI / 2]}
+        >
+          <meshStandardMaterial color="#888" metalness={0.8} />
+        </Cylinder>
+      </group>
 
-      {/* Shoulders */}
-      {type !== "pants" && (
-        <Box args={[width, 0.04, 0.08]} position={[0, -0.07, 0]} castShadow>
-          <meshStandardMaterial color={color} roughness={0.9} />
-        </Box>
+      {/* Shirt / Coat Components */}
+      {!isPants && (
+        <group position={[0, -0.05, 0]}>
+          {/* Shoulders */}
+          <Box args={[bodyWidth, 0.08, 0.12]} position={[0, -0.04, 0]} castShadow>
+            <meshStandardMaterial color={color} roughness={0.8} />
+          </Box>
+          
+          {/* Detail Parts */}
+          {isCoat ? (
+            <>
+              {/* Lapels */}
+              <Box args={[0.1, 0.5, 0.14]} position={[-0.1, -0.25, 0.02]} rotation={[0, 0, 0.05]}>
+                <meshStandardMaterial color={color} roughness={0.7} />
+              </Box>
+              <Box args={[0.1, 0.5, 0.14]} position={[0.1, -0.25, 0.02]} rotation={[0, 0, -0.05]}>
+                <meshStandardMaterial color={color} roughness={0.7} />
+              </Box>
+            </>
+          ) : (
+            /* Shirt Crew-neck & Pocket */
+            <>
+              <Cylinder args={[0.09, 0.1, 0.05]} position={[0, 0, 0]}>
+                <meshStandardMaterial color={color} roughness={0.8} />
+              </Cylinder>
+              <Box args={[0.1, 0.12, 0.01]} position={[0.1, -0.2, 0.05]}>
+                <meshStandardMaterial color={color} roughness={0.9} />
+              </Box>
+            </>
+          )}
+
+          {/* Main Body */}
+          <FlowingPart width={bodyWidth} height={bodyLength} color={color} delay={delay} offsetY={-0.08} />
+          
+          {/* Sleeves */}
+          <group position={[-bodyWidth / 2, -0.04, 0]} rotation={[0, 0, 0.1]}>
+            <FlowingPart width={0.14} height={isCoat ? 1.2 : 0.4} color={color} delay={delay + 0.1} offsetY={0} />
+          </group>
+          <group position={[bodyWidth / 2, -0.04, 0]} rotation={[0, 0, -0.1]}>
+            <FlowingPart width={0.14} height={isCoat ? 1.2 : 0.4} color={color} delay={delay + 0.2} offsetY={0} />
+          </group>
+        </group>
       )}
 
-      {/* Main Body */}
-      <Box
-        args={[width * 0.95, length, 0.06]}
-        position={[0, -0.07 - length / 2, 0]}
-        castShadow
-      >
-        <meshStandardMaterial color={color} roughness={0.9} />
-      </Box>
+      {/* Pants Component */}
+      {isPants && (
+        <group position={[0, -0.05, 0]}>
+          {/* Waist */}
+          <Box args={[bodyWidth, 0.2, 0.15]} position={[0, -0.1, 0]} castShadow>
+            <meshStandardMaterial color={color} roughness={0.8} />
+          </Box>
+          {/* Belt line detail */}
+          <Box args={[bodyWidth + 0.02, 0.04, 0.16]} position={[0, -0.06, 0]}>
+            <meshStandardMaterial color="#1a1a1a" roughness={0.5} />
+          </Box>
+          {/* Legs */}
+          <group position={[-0.1, -0.2, 0]}>
+            <FlowingPart width={0.2} height={0.9} color={color} delay={delay} offsetY={0} />
+          </group>
+          <group position={[0.1, -0.2, 0]}>
+            <FlowingPart width={0.2} height={0.9} color={color} delay={delay + 0.1} offsetY={0} />
+          </group>
+        </group>
+      )}
     </group>
   );
 }
 
 // ----------------------------------------------------------------------------
-// Room Shell (Smaller, Cozier Layout)
+// Room Environment
 // ----------------------------------------------------------------------------
 function RoomEnvironment() {
   return (
     <>
-      {/* Concrete-ish Floor */}
-      <Plane
-        args={[10, 10]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0, 0]}
-        receiveShadow
-      >
-        <meshStandardMaterial color="#e0dfdb" roughness={1} metalness={0.0} />
+      <Plane args={[10, 10]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+        <meshStandardMaterial color="#f0f0f0" roughness={1} metalness={0.0} />
       </Plane>
-
-      {/* Back Wall */}
       <Plane args={[10, 8]} position={[0, 4, -3]} receiveShadow>
-        <meshStandardMaterial color="#fcfcfc" roughness={0.9} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
       </Plane>
-      {/* Baseboard Back */}
+      <Plane args={[10, 8]} rotation={[0, Math.PI / 2, 0]} position={[-3, 4, 0]} receiveShadow>
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+      </Plane>
       <Box args={[10, 0.2, 0.1]} position={[0, 0.1, -2.95]} receiveShadow>
-        <meshStandardMaterial color="#111111" roughness={0.8} />
+        <meshStandardMaterial color="#333" roughness={0.8} />
       </Box>
-
-      {/* Left Wall */}
-      <Plane
-        args={[10, 8]}
-        rotation={[0, Math.PI / 2, 0]}
-        position={[-3, 4, 0]}
-        receiveShadow
-      >
-        <meshStandardMaterial color="#fcfcfc" roughness={0.9} />
-      </Plane>
-      {/* Baseboard Left */}
-      <Box args={[0.1, 0.2, 10]} position={[-2.95, 0.1, 0]} receiveShadow>
-        <meshStandardMaterial color="#111111" roughness={0.8} />
-      </Box>
-
-      {/* Ceiling details (optional minimal light tube) */}
-      <Cylinder
-        args={[0.05, 0.05, 4]}
-        position={[0, 4.9, -1.5]}
-        rotation={[0, 0, Math.PI / 2]}
-      >
-        <meshBasicMaterial color="#ffffff" />
-      </Cylinder>
     </>
   );
 }
 
 // ----------------------------------------------------------------------------
-// Metal Clothing Rack
-// ----------------------------------------------------------------------------
-function ClothingRack() {
-  const rackLength = 2.6;
-  return (
-    <group position={[-1.2, 0, -1.2]}>
-      {/* Heavy Round Bases */}
-      <Cylinder
-        args={[0.25, 0.25, 0.04, 32]}
-        position={[-1.1, 0.02, 0]}
-        castShadow
-      >
-        <meshStandardMaterial color="#444" metalness={0.2} roughness={0.8} />
-      </Cylinder>
-      <Cylinder
-        args={[0.25, 0.25, 0.04, 32]}
-        position={[1.1, 0.02, 0]}
-        castShadow
-      >
-        <meshStandardMaterial color="#444" metalness={0.2} roughness={0.8} />
-      </Cylinder>
-
-      {/* Base Inner Joints */}
-      <Cylinder
-        args={[0.12, 0.12, 0.06, 32]}
-        position={[-1.1, 0.03, 0]}
-        castShadow
-      >
-        <meshStandardMaterial color="#9ca3af" metalness={0.8} />
-      </Cylinder>
-      <Cylinder
-        args={[0.12, 0.12, 0.06, 32]}
-        position={[1.1, 0.03, 0]}
-        castShadow
-      >
-        <meshStandardMaterial color="#9ca3af" metalness={0.8} />
-      </Cylinder>
-
-      {/* Upright Posts */}
-      <Cylinder args={[0.025, 0.025, 1.8]} position={[-1.1, 0.9, 0]} castShadow>
-        <meshStandardMaterial color="#9ca3af" metalness={0.8} />
-      </Cylinder>
-      <Cylinder args={[0.025, 0.025, 1.8]} position={[1.1, 0.9, 0]} castShadow>
-        <meshStandardMaterial color="#9ca3af" metalness={0.8} />
-      </Cylinder>
-
-      {/* Top Rod */}
-      <Cylinder
-        args={[0.025, 0.025, rackLength]}
-        position={[0, 1.8, 0]}
-        rotation={[0, 0, Math.PI / 2]}
-        castShadow
-      >
-        <meshStandardMaterial color="#9ca3af" metalness={0.8} />
-      </Cylinder>
-
-      {/* Corner Joints */}
-      <Box args={[0.06, 0.06, 0.06]} position={[-1.1, 1.8, 0]} castShadow>
-        <meshStandardMaterial color="#6b7280" />
-      </Box>
-      <Box args={[0.06, 0.06, 0.06]} position={[1.1, 1.8, 0]} castShadow>
-        <meshStandardMaterial color="#6b7280" />
-      </Box>
-
-      {/* Clothes */}
-      {Array.from({ length: 17 }).map((_, i) => {
-        let color = "#111"; // Default black
-        let type: "shirt" | "coat" | "pants" = "coat";
-
-        // Mimic image: Black coats left, white/gray middle, black/dark right
-        if (i > 5 && i <= 9) {
-          color = i % 2 === 0 ? "#f4f4f4" : "#e5e5e5"; // White/light gray shirts
-          type = "shirt";
-        } else if (i === 10) {
-          color = "#888"; // Mid gray
-          type = "shirt";
-        } else if (i > 10) {
-          color = "#151515"; // Dark gray/black
-          type = i === 12 || i === 14 ? "pants" : "coat";
-        }
-
-        return (
-          <Cloth
-            key={i}
-            position={[-1.0 + i * 0.12, 1.8, 0]}
-            color={color}
-            delay={i * 0.15}
-            rotation={[0, Math.PI / 6, 0]}
-            type={type}
-          />
-        );
-      })}
-    </group>
-  );
-}
-
-// ----------------------------------------------------------------------------
-// Large Mirror leaning against the wall
+// Large Mirror
 // ----------------------------------------------------------------------------
 function Mirror() {
   return (
-    <group position={[1.5, 0, -2.4]} rotation={[-0.08, -0.3, 0]}>
+    <group position={[1.4, 0, -2.2]} rotation={[-0.05, -0.4, 0]}>
       {/* Mirror Frame */}
-      <Box args={[1.6, 3.2, 0.05]} position={[0, 1.6, 0]} castShadow>
-        <meshStandardMaterial color="#e5e7eb" roughness={0.6} />
+      <Box args={[1.4, 2.8, 0.05]} position={[0, 1.4, 0]} castShadow>
+        <meshStandardMaterial color="#d1d5db" roughness={0.5} />
       </Box>
-      {/* Mirror Surface using Drei's MeshReflectorMaterial */}
-      <Plane args={[1.5, 3.1]} position={[0, 1.6, 0.03]}>
+      {/* Mirror Surface */}
+      <Plane args={[1.3, 2.7]} position={[0, 1.4, 0.03]}>
         <MeshReflectorMaterial
-          blur={[0, 0]}
+          blur={[300, 100]}
           resolution={1024}
+          mixBlur={1}
+          mixStrength={40}
+          roughness={1}
+          depthScale={1.2}
+          minDepthThreshold={0.4}
+          maxDepthThreshold={1.4}
+          color="#101010"
+          metalness={0.5}
           mirror={1}
-          color="#a0a0a0"
-          roughness={0.05}
-          metalness={0.8}
-          depthScale={1}
         />
       </Plane>
     </group>
@@ -266,91 +282,102 @@ function Mirror() {
 }
 
 // ----------------------------------------------------------------------------
-// The Main Scene Assembly
+// Clothing Rack
 // ----------------------------------------------------------------------------
+function ClothingRack() {
+  const rackLength = 2.6;
+  
+  // Stable random variations to avoid lint errors
+  const clothingData = useMemo(() => {
+    return Array.from({ length: 17 }).map((_, i) => {
+      let color = "#111";
+      let type: "shirt" | "coat" | "pants" = "coat";
+
+      if (i > 5 && i <= 9) {
+        color = i % 2 === 0 ? "#f4f4f4" : "#e0e0e0";
+        type = "shirt";
+      } else if (i === 10) {
+        color = "#777";
+        type = "shirt";
+      } else if (i > 10) {
+        color = "#1a1a1a";
+        type = i === 12 || i === 14 ? "pants" : "coat";
+      }
+
+      // Pseudo-random size variation
+      const sizeVar = 0.9 + ((i * 13 + 7) % 10) * 0.02;
+
+      return { color, type, sizeVar };
+    });
+  }, []);
+
+  return (
+    <group position={[-1.2, 0, -1.2]}>
+      <Cylinder args={[0.2, 0.2, 0.05, 32]} position={[-1.1, 0.025, 0]} castShadow>
+        <meshStandardMaterial color="#444" />
+      </Cylinder>
+      <Cylinder args={[0.2, 0.2, 0.05, 32]} position={[1.1, 0.025, 0]} castShadow>
+        <meshStandardMaterial color="#444" />
+      </Cylinder>
+      <Cylinder args={[0.02, 0.02, 1.8]} position={[-1.1, 0.9, 0]} castShadow>
+        <meshStandardMaterial color="#999" metalness={0.8} />
+      </Cylinder>
+      <Cylinder args={[0.02, 0.02, 1.8]} position={[1.1, 0.9, 0]} castShadow>
+        <meshStandardMaterial color="#999" metalness={0.8} />
+      </Cylinder>
+      <Cylinder args={[0.02, 0.02, rackLength]} position={[0, 1.8, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+        <meshStandardMaterial color="#999" metalness={0.8} />
+      </Cylinder>
+
+      {clothingData.map((data, i) => (
+        <Cloth
+          key={i}
+          position={[-1.0 + i * 0.13, 1.8, 0]}
+          color={data.color}
+          delay={i * 0.1}
+          rotation={[0, Math.PI / 2, 0]}
+          type={data.type}
+          sizeVariation={data.sizeVar}
+        />
+      ))}
+    </group>
+  );
+}
+
 function Scene() {
   return (
     <>
-      <ambientLight intensity={0.7} />
-      <directionalLight
-        position={[0, 8, 5]}
-        intensity={1.2}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-      />
-      {/* A light positioned where the fluorescent tube is in the mirror reflection */}
-      <pointLight position={[0, 4, 0]} intensity={1.5} color="#f0fdf4" />
-
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[2, 10, 5]} intensity={1.5} castShadow />
+      <pointLight position={[-2, 4, 1]} intensity={1} color="#fff" />
+      
       <RoomEnvironment />
       <ClothingRack />
       <Mirror />
-
-      <Environment preset="studio" />
+      
+      <Environment preset="city" />
     </>
   );
 }
 
 export default function ClothesPage() {
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100vh",
-        position: "relative",
-        overflow: "hidden",
-        backgroundColor: "#fff",
-      }}
-    >
-      {/* HUD Layer (Matching Aquarium Page style) */}
-      <div
-        style={{ position: "fixed", top: "20px", left: "20px", zIndex: 100 }}
-      >
-        <Link
-          href="/"
-          style={{
-            color: "#000000",
-            textDecoration: "none",
-            fontSize: "20px",
-          }}
-        >
-          ←
-        </Link>
+    <div style={{ width: "100%", height: "100vh", position: "relative", backgroundColor: "#fff" }}>
+      <div style={{ position: "fixed", top: "20px", left: "20px", zIndex: 100 }}>
+        <Link href="/" style={{ color: "#000", textDecoration: "none", fontSize: "24px" }}>←</Link>
       </div>
 
-      <Canvas shadows camera={{ position: [0, 1.6, 4.5], fov: 45 }}>
-        <Suspense
-          fallback={
-            <Html center>
-              <div style={{ color: "black", fontFamily: "sans-serif" }}>
-                ENTERING ROOM...
-              </div>
-            </Html>
-          }
-        >
+      <Canvas shadows camera={{ position: [0, 1.6, 4], fov: 45 }}>
+        <Suspense fallback={<Html center>LOADING...</Html>}>
           <Scene />
-          <OrbitControls
-            target={[0, 1.2, -1.5]}
-            minPolarAngle={Math.PI / 3}
-            maxPolarAngle={Math.PI / 2 + 0.1}
-            minAzimuthAngle={-Math.PI / 4}
-            maxAzimuthAngle={Math.PI / 4}
+          <OrbitControls 
+            target={[0, 1.1, -1.2]} 
+            minPolarAngle={Math.PI / 3} 
+            maxPolarAngle={Math.PI / 2}
             enablePan={false}
-            minDistance={2}
-            maxDistance={7}
           />
         </Suspense>
       </Canvas>
-
-      <style jsx global>{`
-        body {
-          margin: 0;
-          padding: 0;
-          background: #ffffff;
-          width: 100vw;
-          height: 100vh;
-          overflow: hidden;
-        }
-      `}</style>
     </div>
   );
 }
