@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "../theme-provider";
-import Link from "next/link";
+import { BackButton } from "../../components/BackButton";
 
 export default function ThemePage() {
   const { toggleTheme } = useTheme();
@@ -14,16 +14,7 @@ export default function ThemePage() {
         title="Click to toggle theme"
       />
       <div style={{ position: "fixed", top: "20px", left: "20px" }}>
-        <Link
-          href="/"
-          style={{
-            color: "var(--foreground)",
-            textDecoration: "none",
-            fontSize: "14px",
-          }}
-        >
-          ←
-        </Link>
+        <BackButton />
       </div>
     </div>
   );

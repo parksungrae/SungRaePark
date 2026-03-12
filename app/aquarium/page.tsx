@@ -6,7 +6,7 @@ import { OrbitControls } from "@react-three/drei";
 type OrbitControlsImpl = React.ComponentRef<typeof OrbitControls>;
 import * as THREE from "three";
 import { useTheme } from "../theme-provider";
-import Link from "next/link";
+import { BackButton } from "../../components/BackButton";
 
 const FISH_COUNT = 30;
 const BOUNDS = 8;
@@ -231,17 +231,7 @@ export default function AquariumPage() {
       <div
         style={{ position: "fixed", top: "20px", left: "20px", zIndex: 100, display: "flex", gap: "10px", alignItems: "center" }}
       >
-        <Link
-          href="/"
-          style={{
-            color: themeColors.fg,
-            textDecoration: "none",
-            fontSize: "24px",
-            marginRight: "10px"
-          }}
-        >
-          ←
-        </Link>
+        <BackButton />
         <div style={{ 
           display: "flex", 
           background: "rgba(255, 255, 255, 0.05)", 

@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { posts } from "../data";
+import { BackButton } from "../../../components/BackButton";
 
 export default async function PostDetail({
   params,
@@ -17,9 +17,7 @@ export default async function PostDetail({
   return (
     <div className="post-detail-container">
       <header className="post-header">
-        <Link href="/make" className="back-link">
-          ← Back to List
-        </Link>
+        <BackButton href="/make" />
         <span className="post-date">{post.date}</span>
         <h1 className="detail-title">{post.title}</h1>
       </header>

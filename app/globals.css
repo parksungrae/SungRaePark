@@ -1,12 +1,14 @@
 :root {
   --background: #000000;
   --foreground: #ffffff;
+  --foreground-rgb: 255, 255, 255;
   --transition-speed: 0.4s;
 }
 
 [data-theme="light"] {
   --background: #ffffff;
   --foreground: #000000;
+  --foreground-rgb: 0, 0, 0;
 }
 
 * {
@@ -151,19 +153,6 @@ body {
   margin-bottom: 48px;
 }
 
-.back-link {
-  display: inline-block;
-  color: var(--foreground);
-  text-decoration: none;
-  font-size: 14px;
-  margin-bottom: 16px;
-  opacity: 0.6;
-  transition: opacity 0.2s;
-}
-
-.back-link:hover {
-  opacity: 1;
-}
 
 .post-list {
   list-style: none;

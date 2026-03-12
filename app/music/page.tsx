@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import { ExternalLink, ArrowLeft } from "lucide-react";
+import { BackButton } from "../../components/BackButton";
 
 // Define Types
 interface Artist {
@@ -191,6 +191,7 @@ const MusicVisualization = ({ onNodeSelect }: { onNodeSelect: (id: string, data:
         draggedNode = e.node;
         graph.setNodeAttribute(draggedNode, "highlighted", true);
         graph.setNodeAttribute(draggedNode, "labelColor", "#000000");
+        if (containerRef.current) containerRef.current.style.cursor = "grabbing";
       });
 
       sigma.getMouseCaptor().on("mousemovebody", (e: SigmaMouseCoords) => {
@@ -210,16 +211,19 @@ const MusicVisualization = ({ onNodeSelect }: { onNodeSelect: (id: string, data:
         }
         isDragging = false;
         draggedNode = null;
+        if (containerRef.current) containerRef.current.style.cursor = "default";
       });
 
       sigma.on("enterNode", (e: { node: string }) => {
         graph.setNodeAttribute(e.node, "highlighted", true);
         graph.setNodeAttribute(e.node, "labelColor", "#000000");
+        if (containerRef.current) containerRef.current.style.cursor = "pointer";
       });
 
       sigma.on("leaveNode", (e: { node: string }) => {
         graph.setNodeAttribute(e.node, "highlighted", false);
         graph.setNodeAttribute(e.node, "labelColor", "#ffffff");
+        if (containerRef.current) containerRef.current.style.cursor = "default";
       });
 
       sigma.on("clickNode", (e: { node: string }) => {
@@ -316,9 +320,7 @@ export default function MusicPage() {
   return (
     <div className="music-page-container">
       <header className="music-header">
-        <Link href="/" className="back-button" aria-label="Go back">
-          <ArrowLeft size={24} />
-        </Link>
+        <BackButton />
       </header>
 
       <div className="main-content">
@@ -404,27 +406,6 @@ export default function MusicPage() {
           pointer-events: none;
         }
 
-        .back-button {
-          pointer-events: auto;
-          color: rgba(255, 255, 255, 0.4);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 48px;
-          height: 48px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 50%;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(12px);
-        }
-
-        .back-button:hover {
-          color: white;
-          background: rgba(255, 255, 255, 0.15);
-          transform: translateX(-5px);
-          box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-        }
 
         .main-content {
           flex: 1;
@@ -435,7 +416,7 @@ export default function MusicPage() {
 
         :global(.sigma-container) {
           flex: 1;
-          cursor: crosshair;
+          cursor: default;
         }
 
         .node-list-panel {

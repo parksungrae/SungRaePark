@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { posts } from "./data";
+import { BackButton } from "../../components/BackButton";
 
 export default function MakePage() {
   return (
     <div className="make-container">
       <header className="make-header">
-        <Link href="/" className="back-link">
-          ←
-        </Link>
+        <BackButton />
         <h1>叙事</h1>
       </header>
 

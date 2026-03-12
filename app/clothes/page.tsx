@@ -12,7 +12,7 @@ import {
   Html,
 } from "@react-three/drei";
 import * as THREE from "three";
-import Link from "next/link";
+import { BackButton } from "../../components/BackButton";
 
 // ----------------------------------------------------------------------------
 // Flowing Part Component
@@ -236,16 +236,16 @@ function RoomEnvironment() {
   return (
     <>
       <Plane args={[10, 10]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <meshStandardMaterial color="#f0f0f0" roughness={1} metalness={0.0} />
+        <meshStandardMaterial color="#050505" roughness={1} metalness={0.0} />
       </Plane>
       <Plane args={[10, 8]} position={[0, 4, -3]} receiveShadow>
-        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+        <meshStandardMaterial color="#000000" roughness={0.9} />
       </Plane>
       <Plane args={[10, 8]} rotation={[0, Math.PI / 2, 0]} position={[-3, 4, 0]} receiveShadow>
-        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+        <meshStandardMaterial color="#000000" roughness={0.9} />
       </Plane>
       <Box args={[10, 0.2, 0.1]} position={[0, 0.1, -2.95]} receiveShadow>
-        <meshStandardMaterial color="#333" roughness={0.8} />
+        <meshStandardMaterial color="#111" roughness={0.8} />
       </Box>
     </>
   );
@@ -362,13 +362,13 @@ function Scene() {
 
 export default function ClothesPage() {
   return (
-    <div style={{ width: "100%", height: "100vh", position: "relative", backgroundColor: "#fff" }}>
+    <div style={{ width: "100%", height: "100vh", position: "relative", backgroundColor: "#000" }}>
       <div style={{ position: "fixed", top: "20px", left: "20px", zIndex: 100 }}>
-        <Link href="/" style={{ color: "#000", textDecoration: "none", fontSize: "24px" }}>←</Link>
+        <BackButton />
       </div>
 
       <Canvas shadows camera={{ position: [0, 1.6, 4], fov: 45 }}>
-        <Suspense fallback={<Html center>LOADING...</Html>}>
+        <Suspense fallback={<Html center style={{ color: 'white' }}>LOADING...</Html>}>
           <Scene />
           <OrbitControls 
             target={[0, 1.1, -1.2]} 

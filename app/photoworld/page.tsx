@@ -4,8 +4,8 @@ import React, { useRef, useState, useEffect, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera, Image as ThreeImage } from "@react-three/drei";
 import * as THREE from "three";
-import Link from "next/link";
 import Script from "next/script";
+import { BackButton } from "../../components/BackButton";
 
 interface NormalizedLandmark {
   x: number;
@@ -587,9 +587,9 @@ export default function PhotoworldPage() {
         {debugInfo.frames} | Mode: {debugInfo.gesture}
       </div>
 
-      <Link href="/" className="back-button">
-        ←
-      </Link>
+      <div style={{ position: "fixed", top: "20px", left: "20px", zIndex: 10001 }}>
+        <BackButton />
+      </div>
 
       <div className="canvas-wrapper">
         <Canvas shadows flat>
@@ -721,25 +721,6 @@ export default function PhotoworldPage() {
           background: white;
           border-radius: 50%;
           transform: translate(-50%, -50%);
-        }
-        .back-button {
-          position: absolute;
-          top: 15px; /* 시각적 위치 보정을 위해 기존 30px에서 조정 */
-          left: 15px;
-          padding: 15px; /* 클릭 영역 대폭 확대 */
-          z-index: 10001;
-          color: white;
-          text-decoration: none;
-          font-size: 24px;
-          opacity: 0.4;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .back-button:hover {
-          opacity: 1;
-          transform: scale(1.1);
         }
         .camera-overlay {
           position: absolute;
