@@ -2,17 +2,17 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import Tesseract from 'tesseract.js';
-import { 
-  Camera, 
-  Trash2, 
-  Play, 
-  Pause, 
-  Upload, 
+import {
+  Camera,
+  Trash2,
+  Play,
+  Pause,
+  Upload,
   Music,
   ArrowRight,
   ArrowLeft,
   Maximize2,
-  Minimize2
+  Minimize2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChordDiagram from './components/ChordDiagram';
@@ -49,6 +49,15 @@ export default function GuitarTutor() {
   const [currentLine, setCurrentLine] = useState(0);
   const [eyeTrackingActive, setEyeTrackingActive] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [gestureActive, setGestureActive] = useState(false);
+  const [gestureProgress, setGestureProgress] = useState(0);
+  const [gestureDir, setGestureDir] = useState<'left' | 'right' | null>(null);
+
+  const handleGestureChange = useCallback((isActive: boolean, progress: number, direction: 'left' | 'right' | null) => {
+    setGestureActive(isActive);
+    setGestureProgress(progress);
+    setGestureDir(direction);
+  }, []);
 
   const parsedData = useMemo(() => parseLines(text), [text]);
   const allChords = useMemo(() => {
@@ -203,7 +212,7 @@ export default function GuitarTutor() {
                         <h2 className="text-2xl font-black tracking-tight uppercase">Performance</h2>
                       </div>
                       <div className="flex items-center gap-6">
-                        <EyeTracker active={eyeTrackingActive} onNextLine={nextLine} />
+                        <EyeTracker active={eyeTrackingActive} onNextLine={nextLine} onPrevLine={prevLine} onGestureChange={handleGestureChange} />
                         <div className="flex items-center gap-3">
                           <button 
                             onClick={togglePlay} 
@@ -227,6 +236,15 @@ export default function GuitarTutor() {
                         </div>
                       </div>
                   </div>
+
+                  {gestureActive && eyeTrackingActive && gestureDir && (
+                    <div className="absolute inset-0 z-30 flex items-center pointer-events-none"
+                      style={{ justifyContent: gestureDir === 'right' ? 'flex-end' : 'flex-start' }}>
+                      <div className="m-10 text-6xl font-black text-blue-400 opacity-80">
+                        {gestureDir === 'right' ? '→' : '←'}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex-1 flex flex-col lg:flex-row gap-10 overflow-hidden relative z-10">
                     <div className="flex-1 overflow-hidden lg:overflow-y-auto pr-4 space-y-12 scrollbar-hide flex flex-col justify-start py-10">

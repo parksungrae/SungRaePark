@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Bash(BASE=\"https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights\")",
+      "Bash(curl -sO \"$BASE/tiny_face_detector_model-weights_manifest.json\")",
+      "Bash(curl -sO \"$BASE/tiny_face_detector_model-shard1\")",
+      "Bash(curl -sO \"$BASE/face_landmark_68_tiny_model-weights_manifest.json\")",
+      "Bash(curl -sO \"$BASE/face_landmark_68_tiny_model-shard1\")",
+      "Bash(pnpm dev:*)",
+      "Bash(curl -L -O \"https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_landmark_68_model-shard1\" -O \"https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_landmark_68_model-weights_manifest.json\")"
+    ]
+  }
+}
