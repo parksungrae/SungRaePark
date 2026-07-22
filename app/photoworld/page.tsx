@@ -381,17 +381,9 @@ export default function PhotoworldPage() {
           Boolean,
         ).length;
 
-        const isFuckGesture = isMiddle && !isIndex && !isRing && !isPinky;
         const isVSign = isIndex && isMiddle && !isRing && !isPinky;
 
-        if (isFuckGesture) {
-          if (!tapCooldown && selectedIdRef.current === null) {
-            setSelectedId(-1);
-            selectedIdRef.current = -1;
-            tapCooldown = true;
-            setTimeout(() => (tapCooldown = false), 300);
-          }
-        } else if (isVSign) {
+        if (isVSign) {
           if (!tapCooldown && selectedIdRef.current === null) {
             setSelectedId(-2);
             selectedIdRef.current = -2;
@@ -403,7 +395,7 @@ export default function PhotoworldPage() {
           if (Math.abs(dy) > 0.002 && Math.abs(dy) < 0.1) {
             setZoom((prev) => Math.max(20, Math.min(120, prev + dy * 45)));
           }
-        } else if (extendedCount <= 1 && !isFuckGesture && !isVSign) {
+        } else if (extendedCount <= 1 && !isVSign) {
           // Fist (Close): Only close if NOT pinching
           if (!tapCooldown && selectedIdRef.current !== null) {
             setSelectedId(null);
@@ -465,17 +457,9 @@ export default function PhotoworldPage() {
           Boolean,
         ).length;
 
-        const isFuckGesture = isMiddle && !isIndex && !isRing && !isPinky;
         const isVSign = isIndex && isMiddle && !isRing && !isPinky;
 
-        if (isFuckGesture) {
-          if (!tapCooldown && selectedIdRef.current === null) {
-            setSelectedId(-1);
-            selectedIdRef.current = -1;
-            tapCooldown = true;
-            setTimeout(() => (tapCooldown = false), 300);
-          }
-        } else if (isVSign) {
+        if (isVSign) {
           if (!tapCooldown && selectedIdRef.current === null) {
             setSelectedId(-2);
             selectedIdRef.current = -2;
@@ -646,20 +630,16 @@ export default function PhotoworldPage() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <img
               src={
-                selectedId === -1
-                  ? "/fuck.png"
-                  : selectedId === -2
-                    ? "/radiohead.jpg"
-                    : photos.find((p) => p.id === selectedId)?.url
+                selectedId === -2
+                  ? "/radiohead.jpg"
+                  : photos.find((p) => p.id === selectedId)?.url
               }
               alt="Selection"
             />
             <div className="modal-info">
-              {selectedId === -1
-                ? "Fuck You Too"
-                : selectedId === -2
-                  ? "RadioHello"
-                  : `Photo #${selectedId + 1}`}
+              {selectedId === -2
+                ? "RadioHello"
+                : `Photo #${selectedId + 1}`}
             </div>
             <button
               className="close-modal"

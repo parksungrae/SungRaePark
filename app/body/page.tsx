@@ -111,7 +111,7 @@ interface MusclePart {
   rotation?: [number, number, number];
   explodeDir: [number, number, number];
   geometry: "sphere" | "cylinder" | "box";
-  geomArgs?: any;
+  geomArgs?: [number, number, number, number];
 }
 
 const MUSCLE_PARTS: MusclePart[] = [
@@ -698,7 +698,7 @@ export default function BodyPage() {
               initial={{ opacity: 0, x: -30, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: -20, scale: 0.95 }}
-              transition={{ duration: 0.3, cubicBezier: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className={`w-full pointer-events-auto p-6 rounded-2xl border backdrop-blur-xl flex flex-col gap-4 shadow-2xl`}
               style={{
                 backgroundColor: theme === "light" ? "rgba(255, 255, 255, 0.85)" : "rgba(8, 8, 12, 0.85)",

@@ -15,6 +15,7 @@ export default function Home() {
     10: { href: "/photoworld", title: "寫" },
     18: { href: "/music", title: "歌" },
     20: { href: "/guitar", title: "弦" },
+    37: { href: "/portfolio", title: "歷" },
     38: { href: "/theme", title: "明" },
   };
 
