@@ -13,6 +13,7 @@ export default function Home() {
     5: { href: "/clothes", title: "衣" },
     9: { href: "/body", title: "身" },
     10: { href: "/photoworld", title: "寫" },
+    13: { href: "/shrimp", title: "蝦" },
     18: { href: "/music", title: "歌" },
     20: { href: "/guitar", title: "弦" },
     37: { href: "/portfolio", title: "歷" },

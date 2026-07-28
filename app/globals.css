@@ -345,3 +345,432 @@ body {
   font-size: 14px;
   font-weight: 500;
 }
+
+/* ===== SHRIMP PAGES ===== */
+
+.shrimp-page {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 24px;
+}
+
+.shrimp-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-top: 80px;
+}
+
+.shrimp-hero {
+  margin-bottom: 64px;
+}
+
+.shrimp-hero-label {
+  font-size: 12px;
+  opacity: 0.4;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.shrimp-hero-title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.shrimp-hero-desc {
+  margin-top: 24px;
+  opacity: 0.5;
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 420px;
+}
+
+.shrimp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.shrimp-nav-card {
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  padding: 32px 24px;
+  text-decoration: none;
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.shrimp-nav-card:hover {
+  border-color: rgba(128, 128, 128, 0.55);
+  background: rgba(128, 128, 128, 0.04);
+}
+
+.shrimp-card-icon {
+  font-size: 18px;
+  opacity: 0.45;
+}
+
+.shrimp-card-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.shrimp-card-desc {
+  font-size: 12px;
+  opacity: 0.4;
+}
+
+/* Species Page */
+.species-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.species-card {
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+
+.species-card:hover {
+  border-color: rgba(128, 128, 128, 0.5);
+}
+
+.species-color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+}
+
+.species-name-kr {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.species-name-latin {
+  font-size: 11px;
+  opacity: 0.38;
+  font-style: italic;
+  margin-bottom: 12px;
+}
+
+.species-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 8px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  opacity: 0.55;
+  margin-bottom: 12px;
+}
+
+.species-desc {
+  font-size: 12px;
+  opacity: 0.55;
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+.species-params {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(128, 128, 128, 0.1);
+}
+
+.species-param-label {
+  font-size: 10px;
+  opacity: 0.38;
+  margin-bottom: 3px;
+}
+
+.species-param-value {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Tools Page */
+.tools-category {
+  margin-bottom: 48px;
+}
+
+.tools-category-title {
+  font-size: 11px;
+  opacity: 0.38;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+}
+
+.tool-item {
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.08);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.tool-name {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.tool-name-sub {
+  font-size: 11px;
+  opacity: 0.35;
+  margin-bottom: 8px;
+}
+
+.tool-desc {
+  font-size: 13px;
+  opacity: 0.5;
+  line-height: 1.65;
+}
+
+.tool-importance {
+  font-size: 10px;
+  padding: 3px 10px;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  opacity: 0.5;
+  white-space: nowrap;
+}
+
+/* Basics Page */
+.basics-chapter {
+  margin-bottom: 56px;
+}
+
+.basics-chapter-num {
+  font-size: 11px;
+  opacity: 0.28;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.basics-chapter-title {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.basics-params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.basics-param-card {
+  border: 1px solid rgba(128, 128, 128, 0.15);
+  padding: 16px;
+}
+
+.basics-param-name {
+  font-size: 10px;
+  opacity: 0.38;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.basics-param-value {
+  font-size: 1.3rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.basics-param-unit {
+  font-size: 11px;
+  opacity: 0.38;
+  margin-top: 4px;
+}
+
+.basics-text {
+  font-size: 0.93rem;
+  line-height: 1.85;
+  opacity: 0.65;
+  margin-bottom: 16px;
+}
+
+.basics-tips {
+  padding: 16px 20px;
+  background: rgba(128, 128, 128, 0.04);
+  border-left: 2px solid rgba(128, 128, 128, 0.25);
+}
+
+.basics-tip-item {
+  font-size: 12px;
+  opacity: 0.55;
+  line-height: 1.7;
+  padding: 3px 0;
+}
+
+/* Dashboard Page */
+.dashboard-params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 48px;
+}
+
+.param-card {
+  border: 1px solid rgba(128, 128, 128, 0.15);
+  padding: 20px;
+  position: relative;
+}
+
+.param-card-label {
+  font-size: 10px;
+  opacity: 0.38;
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.param-card-value {
+  font-size: 2rem;
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.param-card-unit {
+  font-size: 11px;
+  opacity: 0.38;
+  margin-top: 6px;
+}
+
+.param-card-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dashboard-section-label {
+  font-size: 11px;
+  opacity: 0.38;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+  margin-bottom: 0;
+}
+
+.dashboard-log {
+  list-style: none;
+  margin-bottom: 48px;
+}
+
+.dashboard-log-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.07);
+  font-size: 13px;
+  gap: 12px;
+}
+
+.dashboard-log-date {
+  opacity: 0.35;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.dashboard-log-action {
+  opacity: 0.65;
+  flex: 1;
+}
+
+.dashboard-log-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  opacity: 0.45;
+  white-space: nowrap;
+}
+
+.dashboard-tank-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 48px;
+}
+
+.dashboard-tank-stat {
+  border: 1px solid rgba(128, 128, 128, 0.15);
+  padding: 16px;
+}
+
+.dashboard-tank-stat-label {
+  font-size: 10px;
+  opacity: 0.38;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dashboard-tank-stat-value {
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.shrimp-section-header {
+  margin-top: 48px;
+  margin-bottom: 16px;
+}
+
+.shrimp-section-title {
+  font-size: 1.4rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.shrimp-page-header {
+  margin-bottom: 48px;
+}
+
+.shrimp-back {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .shrimp-grid {
+    grid-template-columns: 1fr;
+  }
+  .species-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-params-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashboard-tank-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .basics-params-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
