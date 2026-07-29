@@ -158,6 +158,56 @@ const PROJECTS: Project[] = [
     ],
   },
   {
+    title: "LORE",
+    summary:
+      "빈티지·셀렉트샵을 큐레이션하는 플랫폼을 웹과 iOS·Android 앱으로 함께 개발했습니다.",
+    tools: [
+      { name: "Next.js", icon: "nextdotjs" },
+      { name: "React", icon: "react" },
+      { name: "TypeScript", icon: "typescript" },
+      { name: "Supabase", icon: "supabase" },
+      { name: "TanStack Query", icon: "reactquery" },
+      { name: "Capacitor", icon: "capacitor" },
+    ],
+    overview:
+      "빈티지 숍과 셀렉트샵, 브랜드, 팝업 이벤트를 지도와 피드로 탐색하고 사용자가 스타일 포스트와 워드로브를 기록하는 큐레이션 플랫폼입니다. Next.js App Router와 Supabase로 서비스를 구축하고, 같은 코드베이스를 Capacitor로 감싸 iOS·Android 앱까지 함께 배포했습니다.",
+    highlights: [
+      {
+        title: "지도 기반 탐색",
+        points: [
+          "줌 레벨에 따라 국가 마커와 지역 마커로 전환하는 단계별 클러스터링 구성",
+          "모바일 바텀시트와 데스크톱 사이드바로 같은 데이터를 화면 크기에 맞게 분기",
+          "검색 오버레이·필터 태그·퀵 내비게이션으로 지도 위에서 완결되는 탐색 동선 설계",
+        ],
+      },
+      {
+        title: "통합 상세 & 컬렉션",
+        points: [
+          "샵·브랜드·이벤트를 entityType으로 분기하는 단일 상세 라우트로 중복 화면 제거",
+          "타입별 스켈레톤을 따로 두어 로딩 중 레이아웃 이동이 없도록 처리",
+          "사용자가 만드는 컬렉션과 운영자가 큐레이션하는 featured 컬렉션을 함께 관리",
+        ],
+      },
+      {
+        title: "커뮤니티 & 워드로브",
+        points: [
+          "Tiptap 기반 스타일 포스트 작성과 댓글·좋아요·조회수·검색 히스토리 구현",
+          "워드로브 아이템 등록, 구매 이력, 분석 모달로 옷장 기록 흐름 구성",
+          "닉네임 중복 검사와 프로필 라우트로 유저 간 탐색 연결",
+        ],
+      },
+      {
+        title: "앱 배포 & 운영",
+        points: [
+          "Capacitor로 iOS·Android 빌드, 노치·다이나믹 아일랜드 대응 Safe Area 처리",
+          "Supabase OAuth 기반 온보딩 퍼널(캐러셀 → 소셜 로그인 → 약관 동의 → 프로필 설정) 구성",
+          "next-intl로 한국어·영어·일본어 3개 로케일 지원",
+          "입점 신청 페이지와 샵·브랜드·이벤트·카테고리·유저를 다루는 슈퍼 어드민 구축",
+        ],
+      },
+    ],
+  },
+  {
     title: "팩트시트",
     summary:
       "VC·투자사가 포트폴리오와 투자 성과를 관리하는 B2B 투자 데이터 SaaS를 개발·운영했습니다.",
