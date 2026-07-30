@@ -16,6 +16,7 @@ export default function Home() {
     13: { href: "/shrimp", title: "蝦" },
     18: { href: "/music", title: "歌" },
     20: { href: "/guitar", title: "弦" },
+    25: { href: "/subscriptions", title: "購" },
     37: { href: "/portfolio", title: "歷" },
     38: { href: "/theme", title: "明" },
   };
