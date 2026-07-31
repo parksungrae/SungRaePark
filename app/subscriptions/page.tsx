@@ -17,7 +17,6 @@ interface Trial {
 
 interface Subscription {
   name: string;
-  hanja: string;
   category: string;
   /** 이번 달 실제 청구액 (원). 무료 체험 중이면 0 */
   amount: number;
@@ -31,7 +30,6 @@ interface Subscription {
 const SUBSCRIPTIONS: Subscription[] = [
   {
     name: "Claude",
-    hanja: "智",
     category: "AI",
     amount: 22 * USD_TO_KRW,
     nativeLabel: "$22",
@@ -39,35 +37,36 @@ const SUBSCRIPTIONS: Subscription[] = [
   },
   {
     name: "YouTube Premium",
-    hanja: "映",
     category: "미디어",
-    amount: 14000,
+    amount: 14900,
+    billingDay: 1,
+  },
+  {
+    name: "배민클럽",
+    category: "배달",
+    amount: 3990,
     billingDay: 1,
   },
   {
     name: "쿠팡 와우",
-    hanja: "配",
     category: "커머스",
-    amount: 5000,
+    amount: 7890,
     billingDay: 1,
   },
   {
-    name: "배달의민족",
-    hanja: "食",
-    category: "커머스",
-    amount: 5000,
-    billingDay: 1,
-  },
-  {
-    name: "iCloud+",
-    hanja: "雲",
+    name: "아이클라우드 (iCloud+) 50GB",
     category: "스토리지",
-    amount: 800,
+    amount: 1100,
+    billingDay: 1,
+  },
+  {
+    name: "피클플러스 (ChatGPT)",
+    category: "AI",
+    amount: 5825,
     billingDay: 1,
   },
   {
     name: "Apple Creator Studio",
-    hanja: "作",
     category: "크리에이터",
     amount: 0,
     trial: {
@@ -182,9 +181,7 @@ export default function SubscriptionsPage() {
       </section>
 
       <section className="sub-section">
-        <h2 className="sub-section-title">
-          <span className="sub-hanja">目</span> 목록
-        </h2>
+        <h2 className="sub-section-title">목록</h2>
 
         <ul className="sub-list">
           {SUBSCRIPTIONS.map((item) => {
@@ -200,7 +197,6 @@ export default function SubscriptionsPage() {
             return (
               <li className="sub-item" key={item.name}>
                 <div className="sub-item-main">
-                  <span className="sub-item-hanja">{item.hanja}</span>
                   <div className="sub-item-name-wrap">
                     <h3 className="sub-item-name">{item.name}</h3>
                     <span className="sub-item-category">{item.category}</span>
@@ -354,12 +350,6 @@ export default function SubscriptionsPage() {
           border-bottom: 1px solid rgba(128, 128, 128, 0.25);
         }
 
-        .sub-hanja {
-          font-weight: 400;
-          font-size: 1.1rem;
-          opacity: 0.5;
-        }
-
         .sub-list {
           list-style: none;
           display: flex;
@@ -375,13 +365,6 @@ export default function SubscriptionsPage() {
           display: flex;
           align-items: center;
           gap: 12px;
-        }
-
-        .sub-item-hanja {
-          font-size: 1rem;
-          opacity: 0.4;
-          width: 20px;
-          flex-shrink: 0;
         }
 
         .sub-item-name-wrap {
@@ -426,7 +409,7 @@ export default function SubscriptionsPage() {
           justify-content: space-between;
           gap: 16px;
           margin-top: 12px;
-          padding-left: 32px;
+          padding-left: 0;
         }
 
         .sub-amount {
@@ -478,7 +461,7 @@ export default function SubscriptionsPage() {
 
         .sub-bar {
           height: 4px;
-          margin: 16px 0 0 32px;
+          margin: 16px 0 0;
           background: rgba(128, 128, 128, 0.15);
         }
 
@@ -526,7 +509,7 @@ export default function SubscriptionsPage() {
           .sub-item-meta {
             flex-direction: column;
             align-items: flex-start;
-            padding-left: 32px;
+            padding-left: 0;
           }
 
           .sub-schedule {
