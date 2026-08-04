@@ -22,6 +22,10 @@ interface Subscription {
   amount: number;
   /** 원화가 아닌 통화로 결제되는 경우 원 표기 */
   nativeLabel?: string;
+  /** 금액 아래에 추가로 보여줄 결제 단위 설명 */
+  amountNote?: string;
+  /** 월 결제가 아닌 항목의 결제 주기 설명 */
+  cycleLabel?: string;
   /** 매월 결제일 (일). 체험 구독은 생략 */
   billingDay?: number;
   trial?: Trial;
@@ -64,6 +68,20 @@ const SUBSCRIPTIONS: Subscription[] = [
     category: "AI",
     amount: 5825,
     billingDay: 1,
+  },
+  {
+    name: "parksungrae.com",
+    category: "도메인",
+    amount: 24000 / 12,
+    amountNote: "24,000원 / 년",
+    cycleLabel: "연 1회 갱신",
+  },
+  {
+    name: "loreselect.com",
+    category: "도메인",
+    amount: 24000 / 12,
+    amountNote: "24,000원 / 년",
+    cycleLabel: "연 1회 갱신",
   },
   {
     name: "Apple Creator Studio",
@@ -218,6 +236,9 @@ export default function SubscriptionsPage() {
                         {item.nativeLabel} · 환율 {KRW.format(USD_TO_KRW)}원 기준
                       </span>
                     )}
+                    {item.amountNote && (
+                      <span className="sub-amount-native">{item.amountNote}</span>
+                    )}
                     {item.trial && (
                       <span className="sub-amount-native">
                         체험 종료 후 {formatKRW(item.trial.afterAmount)} / 월
@@ -228,10 +249,14 @@ export default function SubscriptionsPage() {
                   <div className="sub-schedule">
                     {item.billingDay ? (
                       <span className="sub-cycle">매월 {item.billingDay}일</span>
-                    ) : (
+                    ) : item.trial ? (
                       <span className="sub-cycle">
-                        {formatDate(parseDate(item.trial!.startedAt))} 시작
+                        {formatDate(parseDate(item.trial.startedAt))} 시작
                       </span>
+                    ) : item.cycleLabel ? (
+                      <span className="sub-cycle">{item.cycleLabel}</span>
+                    ) : (
+                      <span className="sub-cycle">일정 미정</span>
                     )}
                     <span className="sub-next">
                       {nextDate ? (
