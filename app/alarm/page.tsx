@@ -81,7 +81,7 @@ export default function AlarmPage() {
   }, []);
 
   useEffect(() => {
-    setFireAt(toLocalInput(new Date(Date.now() + 5 * 60 * 1000)));
+    setFireAt(toLocalInput(new Date()));
 
     if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
       setStatus("unsupported");
@@ -156,7 +156,8 @@ export default function AlarmPage() {
       setMessage("시간을 입력해 주세요.");
       return;
     }
-    if (when.getTime() < Date.now()) {
+    // 입력은 분 단위라 "지금" 분을 고르면 몇 초 지난 시간이 된다. 그 분 안이면 바로 보내도록 허용한다
+    if (when.getTime() < Date.now() - 60 * 1000) {
       setMessage("지난 시간에는 알림을 걸 수 없어요.");
       return;
     }

@@ -61,6 +61,9 @@ self.addEventListener("push", (event) => {
     Promise.all([
       self.registration.showNotification(title, {
         body: data.body || "",
+        // 큰 이미지와 아이콘을 넣으면 알림 자체가 커진다 (너비는 OS가 고정)
+        icon: "/pwa-icon/192",
+        image: "/alarm-banner",
         tag: data.id,
         data: { url: data.url || "/alarm" },
       }),
