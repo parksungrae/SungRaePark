@@ -44,5 +44,3 @@ next-env.d.ts
 # playwright mcp (browser test snapshots/logs)
 .playwright-mcp/
 
-# /alarm 로컬 저장소 (VAPID 키, 구독, 예약 알림)
-/.data/

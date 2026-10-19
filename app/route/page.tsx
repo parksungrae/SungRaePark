@@ -96,7 +96,7 @@ const ROUTES: RouteItem[] = [
   {
     href: "/alarm",
     title: "알림",
-    desc: "시간을 정해 두면 탭을 닫아도 그 시간에 브라우저 푸시 알림이 온다 (Next 서버 스케줄러 + Web Push)",
+    desc: "시간을 정해 두면 탭을 닫아도 그 시간에 브라우저 푸시 알림이 온다 (Supabase cron + Web Push)",
   },
   {
     href: "/theme",

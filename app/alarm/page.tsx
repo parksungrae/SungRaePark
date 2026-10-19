@@ -13,8 +13,13 @@ interface Reminder {
 
 type Status = "loading" | "unsupported" | "denied" | "ready";
 
+// Supabase Edge Function (JWT 검증 없이 호출 가능하도록 배포되어 있어 키가 필요 없다)
+const ALARM_API = `${
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://qswmxdbmzlupuvdypsxj.supabase.co"
+}/functions/v1/push-reminders`;
+
 async function callApi<T>(body: Record<string, unknown>): Promise<T> {
-  const res = await fetch("/api/alarm", {
+  const res = await fetch(ALARM_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -196,7 +201,7 @@ export default function AlarmPage() {
           <h1 className="alarm-title">알림</h1>
           <p className="alarm-desc">
             시간을 정해 두면 그 시간에 브라우저 알림이 와요.
-            <br />이 탭을 닫아도 브라우저와 이 사이트 서버(pnpm dev)가 켜져 있으면 받을 수 있어요.
+            <br />이 탭을 닫아도 브라우저가 켜져 있으면 받을 수 있어요.
           </p>
         </div>
 
@@ -242,7 +247,7 @@ export default function AlarmPage() {
           </button>
 
           {message && <p className="alarm-message">{message}</p>}
-          <p className="alarm-hint">서버가 10초마다 확인해서 보내기 때문에 최대 10초 정도 늦게 올 수 있어요. 서버가 꺼져 있는 동안 지난 알림은 서버가 다시 켜지면 바로 보내요.</p>
+          <p className="alarm-hint">서버가 1분마다 확인해서 보내기 때문에 최대 1분 정도 늦게 올 수 있어요.</p>
         </form>
 
         {sections.map(
