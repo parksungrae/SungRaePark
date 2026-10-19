@@ -20,6 +20,7 @@ export default function Home() {
     27: { href: "/cemeterypark", title: "墓" },
     30: { href: "/mouse", title: "鼠" },
     32: { href: "/package", title: "짐" },
+    34: { href: "/alarm", title: "鈴" },
     37: { href: "/portfolio", title: "歷" },
     38: { href: "/theme", title: "明" },
   };

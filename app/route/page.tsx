@@ -94,6 +94,11 @@ const ROUTES: RouteItem[] = [
     desc: "폰 촬영 → 맥 전송 → AI 설명 작성 → 후르츠·번개장터·인스타 자동 등록 + 알림 모아보기 + 한 번에 수정·삭제 기획안",
   },
   {
+    href: "/alarm",
+    title: "알림",
+    desc: "시간을 정해 두면 탭을 닫아도 그 시간에 브라우저 푸시 알림이 온다 (Next 서버 스케줄러 + Web Push)",
+  },
+  {
     href: "/theme",
     title: "테마",
     desc: "클릭 한 번으로 다크/라이트 테마 전환",
