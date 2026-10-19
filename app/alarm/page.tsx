@@ -114,6 +114,16 @@ export default function AlarmPage() {
     return () => clearInterval(timer);
   }, [endpoint, reminders, loadReminders]);
 
+  // 푸시가 도착하면 기다리지 않고 바로 목록을 갱신한다
+  useEffect(() => {
+    if (!endpoint || !("serviceWorker" in navigator)) return;
+    function handleMessage(event: MessageEvent) {
+      if (event.data?.type === "alarm" && endpoint) loadReminders(endpoint).catch(() => {});
+    }
+    navigator.serviceWorker.addEventListener("message", handleMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", handleMessage);
+  }, [endpoint, loadReminders]);
+
   async function ensureSubscription() {
     if (!registration) throw new Error("서비스 워커가 아직 준비되지 않았어요.");
 
