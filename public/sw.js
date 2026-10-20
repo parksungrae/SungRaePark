@@ -42,6 +42,15 @@ async function clearBadge() {
   if (self.navigator.clearAppBadge) await self.navigator.clearAppBadge().catch(() => {});
 }
 
+// 알림 큰 이미지: public/alarm-photos/01.jpg ~ NN.jpg 중 하나를 무작위로 쓴다
+// (scripts/make-alarm-photos.mjs로 public/images에서 만든다. 사진 수가 바뀌면 이 숫자도 바꿀 것)
+const PHOTO_COUNT = 29;
+
+function randomPhoto() {
+  const n = 1 + Math.floor(Math.random() * PHOTO_COUNT);
+  return `/alarm-photos/${String(n).padStart(2, "0")}.jpg`;
+}
+
 // 열려 있는 탭에 알려서 탭 제목 깜빡임과 파비콘 배지를 켠다
 async function notifyOpenTabs(message) {
   const list = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
@@ -63,7 +72,7 @@ self.addEventListener("push", (event) => {
         body: data.body || "",
         // 큰 이미지와 아이콘을 넣으면 알림 자체가 커진다 (너비는 OS가 고정)
         icon: "/pwa-icon/192",
-        image: "/alarm-banner",
+        image: randomPhoto(),
         tag: data.id,
         data: { url: data.url || "/alarm" },
       }),
