@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "../../../lib/supabase";
+import { getSupabase } from "../../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +10,17 @@ export const dynamic = "force-dynamic";
  * - 401/Invalid API key   -> anon 키가 잘못됨
  */
 export async function GET() {
+  let supabase;
+  try {
+    supabase = getSupabase();
+  } catch (error) {
+    // 환경변수 문제는 요청 단위로 알려주고, 라우트 자체가 죽지는 않게 한다
+    return NextResponse.json(
+      { ok: false, message: (error as Error).message },
+      { status: 500 },
+    );
+  }
+
   const { error } = await supabase.from("__connection_check__").select("*").limit(1);
 
   if (!error || error.code === "PGRST205") {
