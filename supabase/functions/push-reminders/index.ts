@@ -7,6 +7,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
 
+const VAPID_SUBJECT = "https://sung-rae-park.vercel.app";
+
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
 const cors = {
@@ -73,7 +75,8 @@ async function dispatch() {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           JSON.stringify({ id: r.id, title: r.title, body: r.body, url: "/alarm" }),
-          { vapidDetails: { subject: "mailto:noreply@example.com", publicKey: vapid.public_key, privateKey: vapid.private_key } },
+          // Apple 푸시 서버는 subject가 실제 연락처가 아니면(example.com 등) 거부할 수 있어 사이트 주소를 쓴다
+          { vapidDetails: { subject: VAPID_SUBJECT, publicKey: vapid.public_key, privateKey: vapid.private_key } },
         );
       } catch (e) {
         const status = (e as { statusCode?: number }).statusCode;

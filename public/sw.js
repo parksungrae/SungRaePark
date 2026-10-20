@@ -65,14 +65,15 @@ self.addEventListener("push", (event) => {
     data = { body: event.data ? event.data.text() : "" };
   }
   const title = data.title || "알림";
+  const photo = randomPhoto();
 
   event.waitUntil(
     Promise.all([
       self.registration.showNotification(title, {
         body: data.body || "",
-        // 큰 이미지와 아이콘을 넣으면 알림 자체가 커진다 (너비는 OS가 고정)
-        icon: "/pwa-icon/192",
-        image: randomPhoto(),
+        // macOS는 큰 이미지(image)를 지원하지 않고 아이콘만 작게 보여서, 아이콘에도 같은 사진을 쓴다
+        icon: photo,
+        image: photo,
         tag: data.id,
         data: { url: data.url || "/alarm" },
       }),

@@ -61,8 +61,15 @@ const QUICK = [
   { label: "+1분", minutes: 1 },
   { label: "+10분", minutes: 10 },
   { label: "+1시간", minutes: 60 },
-  { label: "내일 이 시간", minutes: 60 * 24 },
+  { label: "내일 이 시간", minutes: 60 * 24, fromNow: true },
 ];
+
+/** + 버튼은 입력된 시간에 계속 더한다 (비었거나 지난 시간이면 지금부터). "내일 이 시간"은 항상 지금 기준 */
+function addQuick(current: string, q: (typeof QUICK)[number]): Date {
+  const parsed = new Date(current).getTime();
+  const base = "fromNow" in q || Number.isNaN(parsed) || parsed < Date.now() ? Date.now() : parsed;
+  return new Date(base + q.minutes * 60 * 1000);
+}
 
 export default function AlarmPage() {
   const [status, setStatus] = useState<Status>("loading");
@@ -89,8 +96,10 @@ export default function AlarmPage() {
     }
     if (Notification.permission === "denied") setStatus("denied");
 
+    // Safari는 서비스 워커가 활성화되기 전에 구독하면 실패하므로 ready(활성화 완료)를 기다린다
     navigator.serviceWorker
       .register("/sw.js")
+      .then(() => navigator.serviceWorker.ready)
       .then(async (reg) => {
         setRegistration(reg);
         const sub = await reg.pushManager.getSubscription();
@@ -246,7 +255,7 @@ export default function AlarmPage() {
               <button
                 key={q.label}
                 type="button"
-                onClick={() => setFireAt(toLocalInput(new Date(Date.now() + q.minutes * 60 * 1000)))}
+                onClick={() => setFireAt((prev) => toLocalInput(addQuick(prev, q)))}
               >
                 {q.label}
               </button>
