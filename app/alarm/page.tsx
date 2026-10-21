@@ -14,6 +14,7 @@ interface Reminder {
 type Status = "loading" | "unsupported" | "denied" | "ready";
 
 // Supabase Edge Function (JWT 검증 없이 호출 가능하도록 배포되어 있어 키가 필요 없다)
+// 함수·테이블 코드는 browser-alarm 레포(supabase/)에서 관리한다. 두 사이트가 같은 함수를 쓴다
 const ALARM_API = `${
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://qswmxdbmzlupuvdypsxj.supabase.co"
 }/functions/v1/push-reminders`;
