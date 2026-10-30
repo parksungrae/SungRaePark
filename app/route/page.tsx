@@ -99,6 +99,11 @@ const ROUTES: RouteItem[] = [
     desc: "시간을 정해 두면 탭을 닫아도 그 시간에 브라우저 푸시 알림이 온다 (Supabase cron + Web Push)",
   },
   {
+    href: "/pet",
+    title: "반려 일기",
+    desc: "반려동물 하루 건강 기록(사진·컨디션·영양제) + 상담 → 병원 전화 + 집사 이야기 나누기 (데모, 브라우저 저장)",
+  },
+  {
     href: "/theme",
     title: "테마",
     desc: "클릭 한 번으로 다크/라이트 테마 전환",
